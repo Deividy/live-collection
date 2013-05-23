@@ -24,7 +24,27 @@ class LiveCollection
 
     _compare: (a, b) -> @comparator(a, b) || @comparePrimitive(a.id, b.id)
 
-    merge: (o) ->
+    comparePrimitive: (a, b) ->
+        return 0 if a == b
+
+        if _.isString(a) && _.isString(b)
+            lowerA = a.toLocaleLowerCase()
+            lowerB = b.toLocaleLowerCase()
+            r = lowerA.localeCompare(lowerB)
+            return 0 if r == 0
+            return if r < 0 then -1 else 1
+
+        return if a < b then -1 else 1
+
+    merge: (data) ->
+        if _.isArray(data)
+            @_mergeOne(obj) for obj in data
+        else if _.isObject(data)
+            @_mergeOne(data)
+        else
+            throw new Exception('Data must be either an array or an object')
+
+    _mergeOne: (o) ->
         current = @byId[o.id]
         if current?
             return @_update(o, current)
@@ -92,8 +112,8 @@ class LiveCollection
             mid = (left + right) >> 1
             cmp = @_compare(obj, @items[mid])
 
-            left = mid + 1 if (cmp < 0)
-            right = mid - 1 if (cmp > 0)
+            left = mid + 1 if (cmp > 0)
+            right = mid - 1 if (cmp < 0)
             return mid if cmp == 0
 
         return if cmp > 0 then mid + 1 else mid
@@ -116,18 +136,6 @@ class LiveCollection
         @items.splice(index, 1)
         @onRemove(obj, index)
         @onCount(@items.length)
-
-    comparePrimitive: (a, b) ->
-        return 0 if a == b
-
-        if _.isString(a) && _.isString(b)
-            lowerA = a.toLocaleLowerCase()
-            lowerB = b.toLocaleLowerCase()
-            r = lowerA.localeCompare(lowerB)
-            return 0 if r == 0
-            return if r < 0 then -1 else 1
-
-        return if a < b then -1 else 1
 
     onAdd: (obj, index) ->
     onUpdate: (obj, index) ->
