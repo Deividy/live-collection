@@ -72,7 +72,7 @@ describe 'LiveCollection', () ->
 
         c.merge(a)
 
-        a = _.filter(a, (e) -> e.karma > 50)
+        a = (obj for obj in a when obj.karma > 50)
         c.items.should.eql(a)
         events = c.getEvents()
         events.add.length.should.eql(4)
@@ -81,21 +81,37 @@ describe 'LiveCollection', () ->
     it 'respects belongs() when adding', () ->
         doKarmaAdds()
 
+
+    it 'does updates', () ->
+        { c, a, events } = doKarmaAdds()
+        events.reset()
+        a[0].karma = 1001
+        a[1].karma = 301
+
+        c.merge(a)
+        c.items.should.eql(a)
+        events.total().should.eql(2)
+        events.update.should.eql([
+            { obj: a[0], index: 0 }
+            { obj: a[1], index: 1 }
+        ])
+        
     it 'does not fire spurious updates', () ->
         { c, a, events } = doKarmaAdds()
         events.reset()
         c.merge(a) for i in [0..10]
         events.total().should.eql(0)
 
-    # FAILS
     it 'respects belongs() when updating', () ->
-        { c, a } = doKarmaAdds()
+        { c, a, events } = doKarmaAdds()
 
-        c.getEvents().reset()
+        events.reset()
         # sue's fall from grace
         a[0].karma = 49
         c.merge(a)
 
-        console.log(c.items)
-
-
+        sue = a.shift()
+        c.items.should.eql(a)
+        events.total().should.eql(2)
+        events.count.should.eql([3])
+        events.remove.should.eql([{ obj: sue, index: 0 }])

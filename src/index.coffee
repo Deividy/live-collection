@@ -17,6 +17,7 @@ class LiveCollection
         @items ?= []
         @sorted = @sortFn?
         @byId = {}
+        @cloneBeforeAdd ?= true
 
     comparator: (a, b) -> 0
     belongs: (o) -> true
@@ -43,12 +44,15 @@ class LiveCollection
         else
             throw new Exception('Data must be either an array or an object')
 
+        return @
+
     _mergeOne: (o) ->
         current = @byId[o.id]
         if current?
             return @_update(o, current)
         else
             return unless @belongs(o)
+            o = _.clone(o) if @cloneBeforeAdd
 
             @byId[o.id] = o
             idx = @binarySearch(o)
@@ -135,6 +139,8 @@ class LiveCollection
         @items.splice(index, 1)
         @onRemove(obj, index)
         @onCount(@items.length)
+
+        return @
 
     onAdd: (obj, index) ->
     onUpdate: (obj, index) ->
