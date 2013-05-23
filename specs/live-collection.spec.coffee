@@ -81,7 +81,6 @@ describe 'LiveCollection', () ->
     it 'respects belongs() when adding', () ->
         doKarmaAdds()
 
-
     it 'does updates', () ->
         { c, a, events } = doKarmaAdds()
         events.reset()
@@ -95,6 +94,30 @@ describe 'LiveCollection', () ->
             { obj: a[0], index: 0 }
             { obj: a[1], index: 1 }
         ])
+
+
+    it 'keeps sort order on updates', () ->
+        { c, a, events } = doKarmaAdds()
+
+        a[0].karma = 150 # sue loses ground
+        a[1].karma = 1200 # gary soars
+
+        events.reset()
+        c.merge(a)
+
+        c.items.should.eql(_.sortBy(a, (o) -> -o.karma))
+
+        # first sue got removed from index 0, added in 2
+        events.remove.should.eql([ { obj: a[0], index: 0 } ])
+        events.add.should.eql( [ { obj: a[0], index: 2 } ])
+
+        # sue's remove/add generates count events 
+        events.count.should.eql([3, 4])
+
+        # by this point gary was already in position 0, and then we get his
+        # update
+        events.update.should.eql( [ { obj: a[1], index: 0 } ])
+
         
     it 'does not fire spurious updates', () ->
         { c, a, events } = doKarmaAdds()
