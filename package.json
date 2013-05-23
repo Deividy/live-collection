@@ -1,0 +1,15 @@
+{
+    "name": "live-collection",
+    "description": "JavaScript collection for high-performance data updates",
+    "version": "0.0.1",
+    "private": false,
+    "dependencies": {
+        "argument-validator": "git://github.com/gduarte/argument-validator.git",
+        "underscore": "",
+        "coffee-script": "",
+    },
+    "devDependencies": {
+        "mocha": "",
+        "should": ""
+    }
+}
