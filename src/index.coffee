@@ -22,18 +22,17 @@ class LiveCollection
     belongs: (o) -> true
     isFresher: (candidate, current) -> true
 
-    _compare: (a, b) -> @comparator(a, b) || @comparePrimitive(a.id, b.id)
+    _compare: (a, b) -> @comparator.call(@, a, b) || @comparePrimitive(a.id, b.id)
 
     comparePrimitive: (a, b) ->
-        return 0 if a == b
-
+        # MUST: think about locale and/or removing diacritics
+        # as is, accents get pushed to the bottom
+        # simply using string.localeCompare() doesn't cut it either
         if _.isString(a) && _.isString(b)
-            lowerA = a.toLocaleLowerCase()
-            lowerB = b.toLocaleLowerCase()
-            r = lowerA.localeCompare(lowerB)
-            return 0 if r == 0
-            return if r < 0 then -1 else 1
+            a = a.toLowerCase()
+            b = b.toLowerCase()
 
+        return 0 if a == b
         return if a < b then -1 else 1
 
     merge: (data) ->
