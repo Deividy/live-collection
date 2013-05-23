@@ -4,12 +4,15 @@ liveCollection = require('../src')
 
 testCollection = (opt = {}) ->
     events = {
-        add: [],
-        update: [],
-        remove: [],
-        count: [],
         total: () -> @add.length + @update.length + @remove.length + @count.length
+        reset: () ->
+            @add = []
+            @update = []
+            @remove = []
+            @count = []
     }
+
+    events.reset()
 
     _.extend(opt, {
         onAdd: (obj, index) => events.add.push({ obj, index })
@@ -23,7 +26,7 @@ testCollection = (opt = {}) ->
 
 karmaCollection = () ->
     testCollection({
-        comparator: (a, b) -> @comparePrimitive(a.karma, b.karma)
+        comparator: (a, b) -> @comparePrimitive(b.karma, a.karma)
         belongs: (a) -> a.karma > 50
     })
 
@@ -55,7 +58,8 @@ describe 'LiveCollection', () ->
             events.count.should.eql([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
             events.add.length.should.eql(10)
 
-    it 'respects belongs() when adding', () ->
+
+    doKarmaAdds = () ->
         c = karmaCollection()
         a = [
             { id: 0, name: 'sue', karma: 1000 }
@@ -63,12 +67,35 @@ describe 'LiveCollection', () ->
             { id: 2, name: 'john', karma: 300 }
             { id: 3, name: 'emily', karma: 30 }
             { id: 4, name: 'richard', karma: 200 }
+            { id: 5, name: 'parnas', karma: 100 }
         ]
 
         c.merge(a)
 
-        a = _.filter(a, (e) -> e.karma > 50).reverse()
+        a = _.filter(a, (e) -> e.karma > 50)
         c.items.should.eql(a)
+        events = c.getEvents()
+        events.add.length.should.eql(4)
+        return { c, a, events }
 
+    it 'respects belongs() when adding', () ->
+        doKarmaAdds()
+
+    it 'does not fire spurious updates', () ->
+        { c, a, events } = doKarmaAdds()
+        events.reset()
+        c.merge(a) for i in [0..10]
+        events.total().should.eql(0)
+
+    # FAILS
     it 'respects belongs() when updating', () ->
+        { c, a } = doKarmaAdds()
+
+        c.getEvents().reset()
+        # sue's fall from grace
+        a[0].karma = 49
+        c.merge(a)
+
+        console.log(c.items)
+
 
