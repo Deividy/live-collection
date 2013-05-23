@@ -138,3 +138,15 @@ describe 'LiveCollection', () ->
         events.total().should.eql(2)
         events.count.should.eql([3])
         events.remove.should.eql([{ obj: sue, index: 0 }])
+
+
+    it 'respects the cloneBeforeAdd flag', () ->
+        o = { id: 10, name: 'Kasparov' }
+        c = liveCollection(cloneBeforeAdd: false)
+        c.merge(o)
+        c.items[0].should.equal(o)
+
+        c = liveCollection()
+        c.merge(o)
+        c.items[0].should.not.equal(o)
+        c.items[0].should.eql(o)

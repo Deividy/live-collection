@@ -3,21 +3,24 @@ jsRoot = @
 liveCollection = (options) -> new LiveCollection(options)
 
 if module?.exports?
-  module.exports = liveCollection
-  _ = require('underscore')
+    module.exports = liveCollection
+    _ = require('underscore')
 else
-  root.liveCollection = liveCollection
-  _ = jsRoot._
+    jsRoot.liveCollection = liveCollection
+    _ = jsRoot._
 
 liveCollection.Class = LiveCollection
 
 class LiveCollection
     constructor: (options = {}) ->
         _.extend(@, options)
-        @items ?= []
+        @items = []
         @sorted = @sortFn?
         @byId = {}
         @cloneBeforeAdd ?= true
+
+        @_preAdd = if @cloneBeforeAdd == false then _.identity else _.clone
+        @reset(options.items, options.preSorted) if options.items?
 
     comparator: (a, b) -> 0
     belongs: (o) -> true
@@ -36,6 +39,13 @@ class LiveCollection
         return 0 if a == b
         return if a < b then -1 else 1
 
+    reset: (items, preSorted) ->
+        unless _.isArray(items)
+            throw new Error('items must be an array')
+
+        @items = (@_preAdd(o) for o in items)
+        @items.sort(@comparator) unless preSorted
+
     merge: (data) ->
         if _.isArray(data)
             @_mergeOne(obj) for obj in data
@@ -52,7 +62,7 @@ class LiveCollection
             return @_update(o, current)
         else
             return unless @belongs(o)
-            o = _.clone(o) if @cloneBeforeAdd
+            o = @_preAdd(o)
 
             @byId[o.id] = o
             idx = @binarySearch(o)
@@ -145,4 +155,5 @@ class LiveCollection
     onAdd: (obj, index) ->
     onUpdate: (obj, index) ->
     onRemove: (obj, index) ->
+    onReset: (items) ->
     onCount: (count) ->
