@@ -123,7 +123,7 @@ class LiveCollection
             return false if @_compare(@items[idx-1], obj) >= 0
 
         if idx < @items.length - 1
-            return false if @_compare(obj, @items[idx+1]) <= 0
+            return false if @_compare(obj, @items[idx+1]) >= 0
 
         return true
 
