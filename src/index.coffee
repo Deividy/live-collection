@@ -39,12 +39,21 @@ class LiveCollection
         return 0 if a == b
         return if a < b then -1 else 1
 
-    reset: (items, preSorted) ->
+    reset: (items) ->
         unless _.isArray(items)
             throw new Error('items must be an array')
 
-        @items = (@_preAdd(o) for o in items)
-        @items.sort(@comparator) unless preSorted
+        @items = []
+        for o in items
+            continue unless @belongs(o)
+            @byId[o.id] = o
+            @items.push(@_preAdd(o))
+
+        c = _.bind(@comparator, @)
+        @items.sort(c)
+
+        @onReset(@items, @items.length)
+        return @
 
     merge: (data) ->
         if _.isArray(data)
@@ -155,5 +164,5 @@ class LiveCollection
     onAdd: (obj, index) ->
     onUpdate: (obj, index) ->
     onRemove: (obj, index) ->
-    onReset: (items) ->
+    onReset: (items, count) ->
     onCount: (count) ->
