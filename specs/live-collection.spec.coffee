@@ -3,6 +3,8 @@ _ = require('underscore')
 liveCollection = require('../src')
 
 testCollection = (opt = {}) ->
+    c = liveCollection(opt)
+
     events = {
         total: () ->
             @adds.length + @updates.length + @removes.length + @counts.length + @resets.length
@@ -17,16 +19,16 @@ testCollection = (opt = {}) ->
 
     events.reset()
 
-    _.extend(opt, {
-        onAdd: (obj, index) => events.adds.push({ obj, index })
-        onUpdate: (obj, index) => events.updates.push({ obj, index })
-        onRemove: (obj, index) => events.removes.push({ obj, index })
-        onReset: (items, count) => events.resets.push({ items, count: items.length })
-        onCount: (count) => events.counts.push(count)
-        getEvents: () => events
+    c.on({
+        "add": (obj, index) -> events.adds.push({ obj, index })
+        "update": (obj, index) -> events.updates.push({ obj, index })
+        "remove": (obj, index) -> events.removes.push({ obj, index })
+        "reset": (items, count) -> events.resets.push({ items, count: items.length })
+        "count": (count) -> events.counts.push(count)
     })
 
-    return liveCollection(opt)
+    c.getEvents = () -> events
+    return c
 
 karmaCollection = () ->
     testCollection({
@@ -168,5 +170,6 @@ describe 'LiveCollection', () ->
         k.items.should.eql(c.items)
 
         events = k.getEvents()
-        events.total().should.eql(1)
+        events.total().should.eql(2)
         events.resets.should.eql([{ items: k.items, count: k.items.length }])
+        events.counts.should.eql([4])

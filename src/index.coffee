@@ -5,13 +5,25 @@ liveCollection = (options) -> new LiveCollection(options)
 if module?.exports?
     module.exports = liveCollection
     _ = require('underscore')
+    Backbone = require('backbone')
 else
     jsRoot.liveCollection = liveCollection
-    _ = jsRoot._
+    { Backbone, _ } = jsRoot
+
+
+# Events are
+#
+# add: (obj, index) ->
+# update: (obj, index) ->
+# remove: (obj, index) ->
+# reset: (items, count) ->
+# count: (count) ->
 
 class LiveCollection
     constructor: (options = {}) ->
         _.extend(@, options)
+        _.extend(@, Backbone.Events)
+
         @items = []
         @sorted = @sortFn?
         @byId = {}
@@ -50,7 +62,8 @@ class LiveCollection
         c = _.bind(@comparator, @)
         @items.sort(c)
 
-        @onReset(@items, @items.length)
+        @trigger("reset", @items, @items.length)
+        @trigger("count", @items.length)
         return @
 
     merge: (data) ->
@@ -74,8 +87,8 @@ class LiveCollection
             @byId[o.id] = o
             idx = @binarySearch(o)
             @items.splice(idx, 0, o)
-            @onAdd(o, idx)
-            @onCount(@items.length)
+            @trigger("add", o, idx)
+            @trigger("count", @items.length)
 
     _update: (fresh, current) ->
         return unless @isFresher(fresh, current)
@@ -98,7 +111,7 @@ class LiveCollection
         return @remove(current, idxCurrent) unless @belongs(current)
 
         if @hasRightIndex(current, idxCurrent)
-            @onUpdate(current, idxCurrent)
+            @trigger("update", current, idxCurrent)
         else
             # since the sort index changed, we'll handle this as remove/add
             # this makes it easy for UIs to fix themselves with the minimum
@@ -154,15 +167,9 @@ class LiveCollection
         index ?= @binarySearch(obj)
         delete @byId[obj.id]
         @items.splice(index, 1)
-        @onRemove(obj, index)
-        @onCount(@items.length)
+        @trigger("remove", obj, index)
+        @trigger("count", @items.length)
 
         return @
-
-    onAdd: (obj, index) ->
-    onUpdate: (obj, index) ->
-    onRemove: (obj, index) ->
-    onReset: (items, count) ->
-    onCount: (count) ->
 
 liveCollection.Class = LiveCollection
