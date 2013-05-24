@@ -9,8 +9,6 @@ else
     jsRoot.liveCollection = liveCollection
     _ = jsRoot._
 
-liveCollection.Class = LiveCollection
-
 class LiveCollection
     constructor: (options = {}) ->
         _.extend(@, options)
@@ -166,3 +164,5 @@ class LiveCollection
     onRemove: (obj, index) ->
     onReset: (items, count) ->
     onCount: (count) ->
+
+liveCollection.Class = LiveCollection
