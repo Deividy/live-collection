@@ -6,7 +6,8 @@
     "dependencies": {
         "argument-validator": "git://github.com/gduarte/argument-validator.git",
         "underscore": "",
-        "coffee-script": ""
+        "coffee-script": "",
+        "backbone": ""
     },
     "devDependencies": {
         "mocha": "",
