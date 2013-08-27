@@ -38,6 +38,7 @@ class LiveCollection
 
     _compare: (a, b) -> @comparator.call(@, a, b) || @comparePrimitive(a.id, b.id)
 
+    # handles dates, strings, booleans, numbers
     comparePrimitive: (a, b) ->
         # MUST: think about locale and/or removing diacritics
         # as is, accents get pushed to the bottom
@@ -46,7 +47,7 @@ class LiveCollection
             a = a.toLowerCase()
             b = b.toLowerCase()
 
-        return 0 if a == b
+        return 0 if a.valueOf() == b.valueOf()
         return if a < b then -1 else 1
 
     reset: (items) ->
