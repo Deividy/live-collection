@@ -72,11 +72,14 @@ class LiveCollection
         else if _.isObject(data)
             @_mergeOne(data)
         else
-            throw new Exception('Data must be either an array or an object')
+            throw new Error('Data must be either an array or an object')
 
         return @
 
     _mergeOne: (o) ->
+        unless o.id?
+            throw new Error("id must not be nil")
+
         current = @byId[o.id]
         if current?
             return @_update(o, current)

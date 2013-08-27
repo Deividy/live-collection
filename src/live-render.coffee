@@ -45,15 +45,16 @@ class LiveRender
         handler(item)
 
     add: (item, index) ->
-        content = $(@render(item)).hide()
+        html = @render(item).trim()
+        el = $(html).hide()
         if 0 == index
-            @container.prepend(content)
+            el.prependTo(@container).fadeIn()
         else
-            content.insertBefore(@contaner.children().eq(index)).fadeIn()
+            el.insertAfter(@container.children().eq(index - 1)).fadeIn()
 
     update: (item, index) ->
-        content = @render(item)
-        @container.children().eq(index).replaceWith(content)
+        html = @render(item).trim()
+        @container.children().eq(index).replaceWith(html)
 
     remove: (item, index) -> @container.children().eq(index).remove()
     
