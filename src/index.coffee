@@ -57,8 +57,9 @@ class LiveCollection
         @items = []
         for o in items
             continue unless @belongs(o)
+            o = @_preAdd(o)
             @byId[o.id] = o
-            @items.push(@_preAdd(o))
+            @items.push(o)
 
         c = _.bind(@comparator, @)
         @items.sort(c)
