@@ -173,3 +173,17 @@ describe 'LiveCollection', () ->
         events.total().should.eql(2)
         events.resets.should.eql([{ items: k.items, count: k.items.length }])
         events.counts.should.eql([4])
+
+    it 'clears properly on reset', () ->
+        c = testCollection(
+            { comparator: (a, b) -> @comparePrimitive(a.id, b.id) }
+        )
+
+        c.merge(id: 1)
+        c.merge(id: 2)
+        c.merge(id: 3)
+
+        items = [ { id: 10 }, { id: 11} ]
+        c.reset(items)
+        c.items.should.eql(items)
+        _.keys(c.byId).should.eql(['10', '11'])

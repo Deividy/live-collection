@@ -55,6 +55,7 @@ class LiveCollection
             throw new Error('items must be an array')
 
         @items = []
+        @byId = {}
         for o in items
             continue unless @belongs(o)
             o = @_preAdd(o)
