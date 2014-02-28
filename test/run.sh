@@ -1,2 +1,2 @@
-../compile.coffee
-../node_modules/karma/bin/karma start karma.conf.js
+./compile.coffee
+./node_modules/karma/bin/karma start test/karma.conf.js
