@@ -1,6 +1,7 @@
 _ = require('underscore')
 
 liveCollection = require('../src/live-collection')
+liveModel = require('../src/live-model')
 
 testCollection = (opt = {}) ->
     c = liveCollection(opt)
@@ -46,14 +47,15 @@ describe 'LiveCollection', () ->
             [ 5, 1, 2, 3, 4, 6, 7, 8, 9, 0 ]
         ]
 
-        expected = ( {id: n} for n in [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ])
-
         for order in addOrders
             c = testCollection()
 
             for n, cnt in order
                 c.merge(id: n)
-                expected = ( { id: n } for n in order.slice(0, cnt + 1).sort() )
+                expected = (
+                    liveModel({ id: n }, c) for n in order.slice(0, cnt + 1).sort()
+                )
+
                 c.items.should.eql(expected)
 
                 for item, idx in c.items
@@ -80,7 +82,7 @@ describe 'LiveCollection', () ->
         a = karmaArray()
         c.merge(a)
 
-        a = (obj for obj in a when obj.karma > 50)
+        a = (liveModel(obj, c) for obj in a when obj.karma > 50)
         c.items.should.eql(a)
         events = c.getEvents()
         events.adds.length.should.eql(4)
@@ -92,6 +94,7 @@ describe 'LiveCollection', () ->
     it 'does updates', () ->
         { c, a, events } = doKarmaAdds()
         events.reset()
+
         a[0].karma = 1001
         a[1].karma = 301
 
@@ -105,6 +108,7 @@ describe 'LiveCollection', () ->
 
 
     it 'keeps sort order on updates', () ->
+        # TODO: .eql(obj) not only ID
         { c, a, events } = doKarmaAdds()
 
         a[0].karma = 150 # sue loses ground
@@ -112,20 +116,31 @@ describe 'LiveCollection', () ->
 
         events.reset()
         c.merge(a)
+        
+        kSort = _.sortBy(a, (o) -> -o.karma)
+        kSort[0].id.should.eql(c.items[0].id)
+        kSort[1].id.should.eql(c.items[1].id)
+        kSort[2].id.should.eql(c.items[2].id)
+        kSort[3].id.should.eql(c.items[3].id)
 
-        c.items.should.eql(_.sortBy(a, (o) -> -o.karma))
 
         # first sue got removed from index 0, added in 2
-        events.removes.should.eql([ { obj: a[0], index: 0 } ])
-        events.adds.should.eql( [ { obj: a[0], index: 2 } ])
+        events.removes.length.should.eql(1)
+        events.removes[0].index.should.eql(0)
+        events.removes[0].obj.id.should.eql(a[0].id)
+
+        events.adds.length.should.eql(1)
+        events.adds[0].index.should.eql(2)
+        events.adds[0].obj.id.should.eql(a[0].id)
 
         # sue's remove/add generates count events 
         events.counts.should.eql([3, 4])
 
         # by this point gary was already in position 0, and then we get his
         # update
-        events.updates.should.eql( [ { obj: a[1], index: 0 } ])
-
+        events.updates.length.should.eql(1)
+        events.updates[0].index.should.eql(0)
+        events.updates[0].obj.id.should.eql(a[1].id)
         
     it 'does not fire spurious updates', () ->
         { c, a, events } = doKarmaAdds()
@@ -147,19 +162,6 @@ describe 'LiveCollection', () ->
         events.counts.should.eql([3])
         events.removes.should.eql([{ obj: sue, index: 0 }])
 
-
-    it 'respects the cloneBeforeAdd flag', () ->
-        o = { id: 10, name: 'Kasparov' }
-        c = liveCollection(cloneBeforeAdd: false)
-        c.merge(o)
-        c.items[0].should.equal(o)
-
-        c = liveCollection()
-        c.merge(o)
-        c.items[0].should.not.equal(o)
-        c.items[0].should.eql(o)
-
-
     it 'resets the collection', () ->
         a = karmaArray()
         k = karmaCollection()
@@ -167,7 +169,9 @@ describe 'LiveCollection', () ->
         k.reset(a)
 
         { c } = doKarmaAdds()
-        k.items.should.eql(c.items)
+        for i, idx in k.items
+            cItem = c.items[idx]
+            _.pick(i, i.attributes).should.eql(_.pick(cItem, cItem.attributes))
 
         events = k.getEvents()
         events.total().should.eql(2)
@@ -183,7 +187,7 @@ describe 'LiveCollection', () ->
         c.merge(id: 2)
         c.merge(id: 3)
 
-        items = [ { id: 10 }, { id: 11} ]
+        items = [ liveModel({ id: 10 }, c), liveModel({ id: 11}, c) ]
         c.reset(items)
         c.items.should.eql(items)
         _.keys(c.byId).should.eql(['10', '11'])

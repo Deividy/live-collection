@@ -27,6 +27,8 @@ class LiveModel
 
         @refresh()
 
+        @isLiveModel = true
+
     refresh: () -> @previousValues = _.pick(@, @attributes)
 
     isDirty: () ->

@@ -6,10 +6,10 @@ if module?.exports?
     module.exports = liveCollection
     _ = require('underscore')
     Backbone = require('backbone')
-    LiveModel = require('./live-model')
+    liveModel = require('./live-model')
 else
     jsRoot.liveCollection = liveCollection
-    { Backbone, _, LiveModel } = jsRoot
+    { Backbone, _, liveModel } = jsRoot
 
 
 # Events are
@@ -28,7 +28,6 @@ class LiveCollection
         @items = []
         @sorted = @sortFn?
         @byId = {}
-        @cloneBeforeAdd ?= true
         @workflowVersion ?= 0
 
         @reset(options.items, options.preSorted) if options.items?
@@ -86,10 +85,9 @@ class LiveCollection
     isFresher: (candidate, current) -> true
 
     _preAdd: (obj) ->
-        if (@cloneBeforeAdd == true)
-            obj = _.clone(obj)
+        return liveModel(obj, @) unless obj.isLiveModel
 
-        return new LiveModel(obj, @)
+        return liveModel(_.pick(obj, obj.attributes), @)
 
     _compare: (a, b) -> @comparator.call(@, a, b) || @comparePrimitive(a.id, b.id)
 
@@ -161,10 +159,10 @@ class LiveCollection
         idxCurrent = @binarySearch(current)
 
         updated = false
-        for k, v of fresh
-            continue if current[k] == v
+        for attr in current.attributes
+            continue if current[attr] == fresh[attr]
             updated = true
-            current[k] = v
+            current.setValue(attr, fresh[attr])
 
         return unless updated
 
