@@ -31,6 +31,27 @@ class LiveModel
 
     refresh: () -> @previousValues = _.pick(@, @attributes)
 
+    initWrappers: (@lastSelector) ->
+        F.demandGoodString(@lastSelector, 'lastSelector')
+
+        @wrap($(container)) for container in $(@lastSelector)
+        return
+
+    wrap: ($container) ->
+        F.demandSelector($container, '$container')
+
+        lineWrapper = liveWrapper($container, @attributes)
+
+        @lineWrappers.push(lineWrapper)
+
+        @bindEvents(lineWrapper)
+        @forcePopulate(lineWrapper)
+        
+        return lineWrapper
+
+    resetWrappers: () ->
+        @lineWrappers = [ ]
+
     isDirty: () ->
         return (@dirtyAttributes().length > 0)
 

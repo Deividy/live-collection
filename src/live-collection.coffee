@@ -38,9 +38,13 @@ class LiveCollection
 
         @debounceSave = _.debounce(@save, 100)
 
-    doSave: (updates, callback) -> throw new Error("")
-    doDelete: (item, callback) -> throw new Error("")
-    doAdd: (callback) -> throw new Error("")
+    doSave: (updates, callback) -> throw new Error("Not Implemented")
+    doDelete: (item, callback) -> throw new Error("Not Implemented")
+    doAdd: (callback) -> throw new Error("Not Implemented")
+ 
+    comparator: (a, b) -> 0
+    belongs: (o) -> true
+    isFresher: (candidate, current) -> true
 
     save: () ->
         return if (_.isEmpty(@queueById) || @isRunning)
@@ -80,9 +84,6 @@ class LiveCollection
         @trigger("save:done", @workflowVersion)
         @debounceSave()
 
-    comparator: (a, b) -> 0
-    belongs: (o) -> true
-    isFresher: (candidate, current) -> true
 
     _preAdd: (obj) ->
         unless obj.isLiveModel
