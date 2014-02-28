@@ -15,9 +15,10 @@ module.exports = function(config) {
         	'node_modules/underscore/underscore.js',
         	'node_modules/backbone/backbone.js',
         	'node_modules/functoids/functoids.js',
-        	'live-collection.js',
-        
         	'node_modules/should/should.js',
+        	'node_modules/jquery/jquery.js',
+
+        	'live-collection.js',
         	'test/specs/*.spec.*'
         ],
         

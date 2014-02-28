@@ -7,7 +7,8 @@
     "functoids": "git://github.com/Deividy/functoids.git",
     "underscore": "",
     "coffee-script": "",
-    "backbone": ""
+    "backbone": "",
+    "jquery": "~2.1.0"
   },
   "devDependencies": {
     "mocha": "",
