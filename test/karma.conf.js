@@ -16,7 +16,7 @@ module.exports = function(config) {
         	'node_modules/backbone/backbone.js',
         	'node_modules/functoids/functoids.js',
         	'node_modules/should/should.js',
-        	'node_modules/jquery/jquery.js',
+        	'node_modules/jquery/dist/jquery.js',
 
         	'live-collection.js',
         	'test/specs/*.spec.*'
