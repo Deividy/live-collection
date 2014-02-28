@@ -1,7 +1,4 @@
-_ = require('underscore')
-
-liveCollection = require('../src/live-collection')
-liveModel = require('../src/live-model')
+{ _, liveCollection, liveModel } = @
 
 testCollection = (opt = {}) ->
     c = liveCollection(opt)

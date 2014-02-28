@@ -1,8 +1,6 @@
-jsRoot = @
+{ $, _ } = @
 
-{ $, _ } = jsRoot
-
-liveRender = (options) -> new LiveRender(options)
+liveRender = @liveRender = (options) -> new LiveRender(options)
 
 class LiveRender
     constructor: (options = {}) ->
@@ -63,7 +61,3 @@ class LiveRender
         @container.html(content)
 
     count: (count) -> @count.text(count)
-
-jsRoot.liveRender = liveRender
-
-liveRender.Class = LiveRender

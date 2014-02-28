@@ -1,7 +1,4 @@
-_ = require('underscore')
-
-liveModel = require('../src/live-model')
-liveCollection = require('../src/live-collection')
+{ _, liveCollection, liveModel } = @
 
 liveCollectionEmpty = liveCollection()
 liveCollectionWithAttributes = liveCollection({

@@ -1,14 +1,7 @@
-jsRoot = @
+{ _, F } = @
 
-liveWrapper = ($container, attributes) -> new LiveWrapper($container, attributes)
-
-if module?.exports?
-    module.exports = liveWrapper
-    _ = require('underscore')
-    F = require('functoids')
-else
-    jsRoot.liveWrapper = liveWrapper
-    { _, F } = jsRoot
+liveWrapper = @lineWrapper = ($container, attributes) ->
+    new LiveWrapper($container, attributes)
 
 numberKeyCodes = [
     188, 190, 8, 9, 46, 48, 49, 50, 51, 52, 53, 54, 55, 56,

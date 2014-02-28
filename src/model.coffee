@@ -1,17 +1,6 @@
-jsRoot = @
+{ Backbone, _, F, liveWrapper } = @
 
-liveModel = (data, collection) -> new LiveModel(data, collection)
-
-if module?.exports?
-    module.exports = liveModel
-    _ = require('underscore')
-    Backbone = require('backbone')
-    F = require('functoids')
-
-    liveWrapper = require('./live-wrapper')
-else
-    jsRoot.liveModel = liveModel
-    { Backbone, _, F, liveWrapper } = jsRoot
+liveModel = @liveModel = (data, collection) -> new LiveModel(data, collection)
 
 class LiveModel
     constructor: (@originalData, @liveCollection) ->

@@ -1,16 +1,27 @@
 {
-    "name": "live-collection",
-    "description": "JavaScript collection for high-performance data updates",
-    "version": "0.0.1",
-    "private": false,
-    "dependencies": {
-        "functoids": "git://github.com/gduarte/functoids.git",
-        "underscore": "",
-        "coffee-script": "",
-        "backbone": ""
-    },
-    "devDependencies": {
-        "mocha": "",
-        "should": ""
-    }
+  "name": "live-collection",
+  "description": "JavaScript collection for high-performance data updates",
+  "version": "0.0.1",
+  "private": false,
+  "dependencies": {
+    "functoids": "git://github.com/Deividy/functoids.git",
+    "underscore": "",
+    "coffee-script": "",
+    "backbone": ""
+  },
+  "devDependencies": {
+    "mocha": "",
+    "should": "",
+    "karma-mocha": "^0.1.1",
+    "karma-script-launcher": "~0.1.0",
+    "karma-chrome-launcher": "^0.1.2",
+    "karma-firefox-launcher": "^0.1.3",
+    "karma-html2js-preprocessor": "~0.1.0",
+    "karma-coffee-preprocessor": "^0.1.3",
+    "karma-jasmine": "~0.1.5",
+    "requirejs": "~2.1.11",
+    "karma-requirejs": "~0.2.1",
+    "karma-phantomjs-launcher": "~0.1.2",
+    "karma": "~0.10.9"
+  }
 }

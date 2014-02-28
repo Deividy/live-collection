@@ -1,16 +1,6 @@
-jsRoot = @
+{ Backbone, _, liveModel } = @
 
-liveCollection = (options) -> new LiveCollection(options)
-
-if module?.exports?
-    module.exports = liveCollection
-    _ = require('underscore')
-    Backbone = require('backbone')
-    liveModel = require('./live-model')
-else
-    jsRoot.liveCollection = liveCollection
-    { Backbone, _, liveModel } = jsRoot
-
+liveCollection = @liveCollection =  (options) -> new LiveCollection(options)
 
 # Events are
 #
