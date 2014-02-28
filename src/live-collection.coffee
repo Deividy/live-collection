@@ -85,7 +85,10 @@ class LiveCollection
     isFresher: (candidate, current) -> true
 
     _preAdd: (obj) ->
-        return liveModel(obj, @) unless obj.isLiveModel
+        unless obj.isLiveModel
+            return liveModel(obj, @)
+
+        return obj if (obj.liveCollection == @)
 
         return liveModel(_.pick(obj, obj.attributes), @)
 

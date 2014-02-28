@@ -108,7 +108,6 @@ describe 'LiveCollection', () ->
 
 
     it 'keeps sort order on updates', () ->
-        # TODO: .eql(obj) not only ID
         { c, a, events } = doKarmaAdds()
 
         a[0].karma = 150 # sue loses ground
@@ -117,30 +116,18 @@ describe 'LiveCollection', () ->
         events.reset()
         c.merge(a)
         
-        kSort = _.sortBy(a, (o) -> -o.karma)
-        kSort[0].id.should.eql(c.items[0].id)
-        kSort[1].id.should.eql(c.items[1].id)
-        kSort[2].id.should.eql(c.items[2].id)
-        kSort[3].id.should.eql(c.items[3].id)
-
+        c.items.should.eql(_.sortBy(a, (o) -> -o.karma))
 
         # first sue got removed from index 0, added in 2
-        events.removes.length.should.eql(1)
-        events.removes[0].index.should.eql(0)
-        events.removes[0].obj.id.should.eql(a[0].id)
-
-        events.adds.length.should.eql(1)
-        events.adds[0].index.should.eql(2)
-        events.adds[0].obj.id.should.eql(a[0].id)
+        events.removes.should.eql([ { obj: a[0], index: 0 } ])
+        events.adds.should.eql([ { obj: a[0], index: 2 } ])
 
         # sue's remove/add generates count events 
         events.counts.should.eql([3, 4])
 
         # by this point gary was already in position 0, and then we get his
         # update
-        events.updates.length.should.eql(1)
-        events.updates[0].index.should.eql(0)
-        events.updates[0].obj.id.should.eql(a[1].id)
+        events.updates.should.eql([ { obj: a[1], index: 0 } ])
         
     it 'does not fire spurious updates', () ->
         { c, a, events } = doKarmaAdds()
