@@ -61,3 +61,5 @@ class LiveRender
         @container.html(content)
 
     count: (count) -> @count.text(count)
+
+liveRender.Class = LiveRender

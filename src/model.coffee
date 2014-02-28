@@ -115,3 +115,6 @@ class LiveModel
         $dom = $dom.add(lineWrapper.$) for lineWrapper in @lineWrappers
 
         return $dom
+
+
+liveModel.Class = LiveModel

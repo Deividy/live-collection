@@ -89,6 +89,8 @@
 
   })();
 
+  liveWrapper.Class = LiveWrapper;
+
   Backbone = this.Backbone, _ = this._, F = this.F, liveWrapper = this.liveWrapper;
 
   liveModel = this.liveModel = function(data, collection) {
@@ -252,6 +254,8 @@
     return LiveModel;
 
   })();
+
+  liveModel.Class = LiveModel;
 
   Backbone = this.Backbone, _ = this._, liveModel = this.liveModel;
 
@@ -646,5 +650,7 @@
     return LiveRender;
 
   })();
+
+  liveRender.Class = LiveRender;
 
 }).call(this);

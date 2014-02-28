@@ -58,3 +58,5 @@ class LiveWrapper
 
     destroy: () ->
         @$.remove()
+
+liveWrapper.Class = LiveWrapper
