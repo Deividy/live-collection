@@ -4,7 +4,7 @@
     "version": "0.0.1",
     "private": false,
     "dependencies": {
-        "argument-validator": "git://github.com/gduarte/argument-validator.git",
+        "functoids": "git://github.com/gduarte/functoids.git",
         "underscore": "",
         "coffee-script": "",
         "backbone": ""

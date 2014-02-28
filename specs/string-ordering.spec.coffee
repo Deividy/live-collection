@@ -1,6 +1,6 @@
 _ = require('underscore')
 
-liveCollection = require('../src')
+liveCollection = require('../src/live-collection')
 
 orderByName = () ->
     liveCollection({

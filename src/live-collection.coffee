@@ -6,9 +6,10 @@ if module?.exports?
     module.exports = liveCollection
     _ = require('underscore')
     Backbone = require('backbone')
+    LiveModel = require('./live-model')
 else
     jsRoot.liveCollection = liveCollection
-    { Backbone, _ } = jsRoot
+    { Backbone, _, LiveModel } = jsRoot
 
 
 # Events are
@@ -28,13 +29,67 @@ class LiveCollection
         @sorted = @sortFn?
         @byId = {}
         @cloneBeforeAdd ?= true
+        @workflowVersion ?= 0
 
-        @_preAdd = if @cloneBeforeAdd == false then _.identity else _.clone
         @reset(options.items, options.preSorted) if options.items?
+
+        @queueById = { }
+        @lastSave = [ ]
+        @isRunning = false
+
+        @debounceSave = _.debounce(@save, 100)
+
+    doSave: (updates, callback) -> throw new Error("")
+    doDelete: (item, callback) -> throw new Error("")
+    doAdd: (callback) -> throw new Error("")
+
+    save: () ->
+        return if (_.isEmpty(@queueById) || @isRunning)
+
+        @lastSave = [ ]
+        for item in _.values(@queueById)
+            continue unless item.isDirty()
+
+            changes = item.changes()
+            changes.id = item.id
+            @lastSave.push(changes)
+
+        @queueById = { }
+        return if (_.isEmpty(update))
+
+        @isRunning = true
+
+        @doSave(updates, _.bind(@finishSave, @))
+
+    finishSave: (itemsById) ->
+        _.each(@lastSave, (changes) =>
+            item = @byId[changes.id]
+            responseItem = itemsById[changes.id]
+
+            _.extend(item.previousValues, changes.newValues)
+
+            @applyDbValues(changes.id, responseItem)
+        )
+
+        @isRunning = false
+
+        @workflowVersion++
+        @trigger("change:workflowVersion", @workflowVersion)
+
+        @checkWorkflowVersion(data.workflowVersion)
+
+        @trigger("save:done", @workflowVersion)
+        @debounceSave()
 
     comparator: (a, b) -> 0
     belongs: (o) -> true
     isFresher: (candidate, current) -> true
+
+    _preAdd: (obj) ->
+        if (@cloneBeforeAdd == true)
+            obj = _.clone(obj)
+
+        return new LiveModel(obj, @)
 
     _compare: (a, b) -> @comparator.call(@, a, b) || @comparePrimitive(a.id, b.id)
 
