@@ -7,9 +7,11 @@ if module?.exports?
     _ = require('underscore')
     Backbone = require('backbone')
     F = require('functoids')
+
+    liveWrapper = require('./live-wrapper')
 else
     jsRoot.liveModel = liveModel
-    { Backbone, _, F } = jsRoot
+    { Backbone, _, F, liveWrapper } = jsRoot
 
 class LiveModel
     constructor: (@originalData, @liveCollection) ->
