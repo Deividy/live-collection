@@ -1,5 +1,6 @@
 (function() {
   var LiveCollection, LiveModel, LiveRender, LiveWrapper, numberKeyCodes,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   this.liveCollection = function(options) {
@@ -558,8 +559,8 @@
 
   this.liveRender.Class = LiveRender;
 
-  this.liveWrapper = function($container, attrs) {
-    return new LiveWrapper($container, attrs);
+  this.liveWrapper = function($container, attributes, attributeConfig) {
+    return new LiveWrapper($container, attributes, attributeConfig);
   };
 
   numberKeyCodes = [188, 190, 8, 9, 46, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 110];
@@ -570,7 +571,8 @@
       this.$ = $;
       this.attributes = attributes;
       this.attributeConfig = attributeConfig != null ? attributeConfig : {};
-      F.demandSelector(this.$, "$");
+      this.onFieldKeyDown = __bind(this.onFieldKeyDown, this);
+      this.onFieldFocus = __bind(this.onFieldFocus, this);
       F.demandArrayOfGoodStrings(this.attributes, 'attributes');
       this.fields = {};
       this.textFields = {};
@@ -586,6 +588,7 @@
         if ($textField.length > 0) {
           this.textFields[attribute] = $textField;
         }
+        console.log(this.$);
       }
       this.bindEvents();
     }

@@ -1,4 +1,5 @@
-@liveWrapper = ($container, attrs) -> new LiveWrapper($container, attrs)
+@liveWrapper = ($container, attributes, attributeConfig) ->
+    return new LiveWrapper($container, attributes, attributeConfig)
 
 numberKeyCodes = [
     188, 190, 8, 9, 46, 48, 49, 50, 51, 52, 53, 54, 55, 56,
@@ -7,7 +8,7 @@ numberKeyCodes = [
 
 class LiveWrapper
     constructor: (@$, @attributes, @attributeConfig = { }) ->
-        F.demandSelector(@$, "$")
+        #F.demandSelector(@$, "$")
         F.demandArrayOfGoodStrings(@attributes, 'attributes')
 
         @fields = { }
@@ -24,6 +25,8 @@ class LiveWrapper
             if ($textField.length > 0)
                 @textFields[attribute] = $textField
 
+            console.log @$
+
         @bindEvents()
 
     bindEvents: () ->
@@ -33,12 +36,12 @@ class LiveWrapper
             
         return
 
-    onFieldFocus: (ev) ->
+    onFieldFocus: (ev) =>
         $el = $(ev.currentTarget)
         if (ev.currentTarget.name in @attributeConfig.numbers)
             $el.val("") if (Number($el.val()) == 0)
 
-    onFieldKeyDown: (ev) ->
+    onFieldKeyDown: (ev) =>
         F.demandGoodNumber(ev.keyCode, 'ev.keyCode')
         F.demandFunction(ev.preventDefault, 'ev.preventDefault')
 

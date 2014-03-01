@@ -12,11 +12,12 @@ module.exports = function(config) {
             'node_modules/jquery/dist/jquery.js',
 
             'live-collection.js',
-            'specs/*.spec.*'
+            'specs/*.spec.*',
+            'specs/*.html'
         ],
 
-
         preprocessors: {
+            'specs/*.html': [ 'html2js' ],
             'specs/*.spec.coffee': [ 'coffee' ]
         },
 
