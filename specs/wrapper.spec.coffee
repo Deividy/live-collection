@@ -36,6 +36,12 @@ describe 'LiveWrapper', () ->
             .find("input[name='age']").val()
             .should.eql("")
 
+        lw.fields.age.val('18').triggerHandler('focus')
+
+        $container
+            .find("input[name='age']").val()
+            .should.eql("18")
+
         lw.onFieldKeyDown({
             keyCode: 188,
             currentTarget: {
