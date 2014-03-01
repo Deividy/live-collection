@@ -83,3 +83,21 @@ describe 'LiveModel', () ->
         $container.find("input[name='lastName']").val().should.eql("Metheler")
         $container.find("input[name='age']").val().should.eql("23")
         $container.find(".karma").html().should.eql("10")
+
+    it 'should update DOM when set value', () ->
+        $container = $("form div[data-rowid='1']")
+
+        m = liveModel(model2, liveCollectionEmpty)
+        m.wrap($container)
+
+        $container.find("input[name='firstName']").val().should.eql("Deividy")
+        $container.find("input[name='lastName']").val().should.eql("Metheler")
+        $container.find("input[name='age']").val().should.eql("23")
+        $container.find(".karma").html().should.eql("10")
+
+        m.setValues({ karma: 99999, firstName: 'Chuck', lastName: 'Norris', age: 1000 })
+
+        $container.find("input[name='firstName']").val().should.eql("Chuck")
+        $container.find("input[name='lastName']").val().should.eql("Norris")
+        $container.find("input[name='age']").val().should.eql("1000")
+        $container.find(".karma").html().should.eql("99999")
