@@ -77,3 +77,14 @@ describe 'LiveRender', () ->
         })
 
         lc.reset(collection())
+
+    it 'test remove', () ->
+        lc.reset(collection())
+
+        $("[data-rowid='1']").length.should.eql(2)
+        $("ul#items [data-rowid='1']").length.should.eql(1)
+
+        lc.remove({ id: 1 })
+
+        $("[data-rowid='1']").length.should.eql(1)
+        $("ul#items li[data-rowid='1']").length.should.eql(0)

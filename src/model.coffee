@@ -23,23 +23,35 @@ class LiveModel
     initWrappers: (@lastSelector) ->
         F.demandGoodString(@lastSelector, 'lastSelector')
 
+        @resetWrappers()
+
         @wrap($(container)) for container in $(@lastSelector)
         return
 
     wrap: ($container) ->
-        F.demandSelector($container, '$container')
+        #F.demandSelector($container, '$container')
 
-        lineWrapper = liveWrapper($container, @attributes)
+        lw = liveWrapper($container, @attributes)
 
-        @lineWrappers.push(lineWrapper)
+        @liveWrappers.push(lw)
 
-        @bindEvents(lineWrapper)
-        @forcePopulate(lineWrapper)
+        #@bindEvents(lw)
+        #@forcePopulate(lw)
         
-        return lineWrapper
+        return lw
 
     resetWrappers: () ->
-        @lineWrappers = [ ]
+        @liveWrappers = [ ]
+
+    findWrapper: ($container) ->
+        #F.demandSelector($container, '$container')
+        
+        $containers = @$()
+        for wrapper in @liveWrappers
+            if ($containers.index(wrapper.$) == $containers.index($container))
+                return wrapper
+
+        throw new Error("Wrapper not found for #{$container}")
 
     isDirty: () ->
         return (@dirtyAttributes().length > 0)
@@ -100,17 +112,17 @@ class LiveModel
 
         return if (_.isEmpty(values))
 
-        lineWrapper.populate(values) for lineWrapper in @lineWrappers
+        lw.populate(values) for lw in @liveWrappers
 
     destroy: () ->
-        lineWrapper.destroy() for lineWrapper in @lineWrappers
+        lw.destroy() for lw in @liveWrappers
         delete @
 
     $: () ->
         $dom = $()
-        return $dom if (@lineWrappers.length == 0)
+        return $dom if (@liveWrappers.length == 0)
 
-        $dom = $dom.add(lineWrapper.$) for lineWrapper in @lineWrappers
+        $dom = $dom.add(lw.$) for lw in @liveWrappers
 
         return $dom
 

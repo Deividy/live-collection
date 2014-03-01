@@ -41,11 +41,13 @@ class LiveRender
 
     add: (item, index) ->
         html = @render(item).trim()
-        el = $(html).hide()
+        $el = $(html).hide()
         if 0 == index
-            el.prependTo(@container).fadeIn()
+            $el.prependTo(@container).fadeIn()
         else
-            el.insertAfter(@container.children().eq(index - 1)).fadeIn()
+            $el.insertAfter(@container.children().eq(index - 1)).fadeIn()
+
+        item.wrap($el.find("[data-rowid='#{item.id}']"))
 
     update: (item) ->
         index = @lc.binarySearch(item)
@@ -53,11 +55,20 @@ class LiveRender
         html = @render(item).trim()
         @container.children().eq(index).replaceWith(html)
 
-    remove: (item, index) -> @container.children().eq(index).remove()
+    remove: (item, index) ->
+        $el = @container.children().eq(index)
+
+        wrapper = item.findWrapper($el)
+        wrapper.destroy()
     
     reset: (items) ->
-        content = (@render(item) for item in items)
-        @container.html(content)
+        @container.html("")
+
+        for item in items
+            html = @render(item)
+            @container.append(html)
+
+            item.initWrappers("[data-rowid='#{item.id}']")
 
     count: (count) -> @count.text(count)
 

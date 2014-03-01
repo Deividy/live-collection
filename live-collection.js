@@ -326,6 +326,7 @@
       var container, _i, _len, _ref;
       this.lastSelector = lastSelector;
       F.demandGoodString(this.lastSelector, 'lastSelector');
+      this.resetWrappers();
       _ref = $(this.lastSelector);
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         container = _ref[_i];
@@ -334,17 +335,27 @@
     };
 
     LiveModel.prototype.wrap = function($container) {
-      var lineWrapper;
-      F.demandSelector($container, '$container');
-      lineWrapper = liveWrapper($container, this.attributes);
-      this.lineWrappers.push(lineWrapper);
-      this.bindEvents(lineWrapper);
-      this.forcePopulate(lineWrapper);
-      return lineWrapper;
+      var lw;
+      lw = liveWrapper($container, this.attributes);
+      this.liveWrappers.push(lw);
+      return lw;
     };
 
     LiveModel.prototype.resetWrappers = function() {
-      return this.lineWrappers = [];
+      return this.liveWrappers = [];
+    };
+
+    LiveModel.prototype.findWrapper = function($container) {
+      var $containers, wrapper, _i, _len, _ref;
+      $containers = this.$();
+      _ref = this.liveWrappers;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        wrapper = _ref[_i];
+        if ($containers.index(wrapper.$) === $containers.index($container)) {
+          return wrapper;
+        }
+      }
+      throw new Error("Wrapper not found for " + $container);
     };
 
     LiveModel.prototype.isDirty = function() {
@@ -410,7 +421,7 @@
     };
 
     LiveModel.prototype.applyChanges = function() {
-      var attr, lineWrapper, values, _i, _j, _len, _len1, _ref, _ref1, _results;
+      var attr, lw, values, _i, _j, _len, _len1, _ref, _ref1, _results;
       values = {};
       _ref = this.attributes;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -422,35 +433,35 @@
       if (_.isEmpty(values)) {
         return;
       }
-      _ref1 = this.lineWrappers;
+      _ref1 = this.liveWrappers;
       _results = [];
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        lineWrapper = _ref1[_j];
-        _results.push(lineWrapper.populate(values));
+        lw = _ref1[_j];
+        _results.push(lw.populate(values));
       }
       return _results;
     };
 
     LiveModel.prototype.destroy = function() {
-      var lineWrapper, _i, _len, _ref;
-      _ref = this.lineWrappers;
+      var lw, _i, _len, _ref;
+      _ref = this.liveWrappers;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        lineWrapper = _ref[_i];
-        lineWrapper.destroy();
+        lw = _ref[_i];
+        lw.destroy();
       }
       return delete this;
     };
 
     LiveModel.prototype.$ = function() {
-      var $dom, lineWrapper, _i, _len, _ref;
+      var $dom, lw, _i, _len, _ref;
       $dom = $();
-      if (this.lineWrappers.length === 0) {
+      if (this.liveWrappers.length === 0) {
         return $dom;
       }
-      _ref = this.lineWrappers;
+      _ref = this.liveWrappers;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        lineWrapper = _ref[_i];
-        $dom = $dom.add(lineWrapper.$);
+        lw = _ref[_i];
+        $dom = $dom.add(lw.$);
       }
       return $dom;
     };
@@ -514,14 +525,15 @@
     };
 
     LiveRender.prototype.add = function(item, index) {
-      var el, html;
+      var $el, html;
       html = this.render(item).trim();
-      el = $(html).hide();
+      $el = $(html).hide();
       if (0 === index) {
-        return el.prependTo(this.container).fadeIn();
+        $el.prependTo(this.container).fadeIn();
       } else {
-        return el.insertAfter(this.container.children().eq(index - 1)).fadeIn();
+        $el.insertAfter(this.container.children().eq(index - 1)).fadeIn();
       }
+      return item.wrap($el.find("[data-rowid='" + item.id + "']"));
     };
 
     LiveRender.prototype.update = function(item) {
@@ -532,21 +544,23 @@
     };
 
     LiveRender.prototype.remove = function(item, index) {
-      return this.container.children().eq(index).remove();
+      var $el, wrapper;
+      $el = this.container.children().eq(index);
+      wrapper = item.findWrapper($el);
+      return wrapper.destroy();
     };
 
     LiveRender.prototype.reset = function(items) {
-      var content, item;
-      content = (function() {
-        var _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = items.length; _i < _len; _i++) {
-          item = items[_i];
-          _results.push(this.render(item));
-        }
-        return _results;
-      }).call(this);
-      return this.container.html(content);
+      var html, item, _i, _len, _results;
+      this.container.html("");
+      _results = [];
+      for (_i = 0, _len = items.length; _i < _len; _i++) {
+        item = items[_i];
+        html = this.render(item);
+        this.container.append(html);
+        _results.push(item.initWrappers("[data-rowid='" + item.id + "']"));
+      }
+      return _results;
     };
 
     LiveRender.prototype.count = function(count) {
