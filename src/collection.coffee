@@ -108,6 +108,9 @@ class LiveCollection
         @doSave(@lastUpdates, _.bind(@finishSave, @))
 
     finishSave: (itemsById, workflowVersion) ->
+        F.demandGoodObject(itemsById, 'itemsById')
+        F.demandGoodNumber(workflowVersion, 'workflowVersion')
+
         _.each(@lastUpdates, (changes) =>
             item = @byId[changes.id]
             responseItem = itemsById[changes.id]

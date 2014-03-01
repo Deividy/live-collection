@@ -97,6 +97,8 @@
     };
 
     LiveCollection.prototype.finishSave = function(itemsById, workflowVersion) {
+      F.demandGoodObject(itemsById, 'itemsById');
+      F.demandGoodNumber(workflowVersion, 'workflowVersion');
       _.each(this.lastUpdates, (function(_this) {
         return function(changes) {
           var item, responseItem;
