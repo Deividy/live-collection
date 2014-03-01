@@ -28,7 +28,7 @@
 #
 #
 # doDelete: (model, callback) ->
-#
+#   The callback expetcs the new workflowVersion
 #
 # doCreate (callback) -> 
 #
@@ -58,6 +58,9 @@ class LiveCollection
     isFresher: (candidate, current) -> true
 
     delete: (id) ->
+        F.demandGoodNumber(id, 'id')
+        F.demandFunction(@doDelete, 'doDelete')
+
         item = @get({ id })
         
         @trigger('delete:start', item)
@@ -66,6 +69,8 @@ class LiveCollection
         @remove(item)
 
     finishDelete: (workflowVersion) ->
+        F.demandGoodNumber(workflowVersion, 'workflowVersion')
+
         @workflowVersion++
         @trigger("workflowVersion:change", @workflowVersion)
 

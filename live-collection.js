@@ -43,6 +43,8 @@
 
     LiveCollection.prototype["delete"] = function(id) {
       var item;
+      F.demandGoodNumber(id, 'id');
+      F.demandFunction(this.doDelete, 'doDelete');
       item = this.get({
         id: id
       });
@@ -52,6 +54,7 @@
     };
 
     LiveCollection.prototype.finishDelete = function(workflowVersion) {
+      F.demandGoodNumber(workflowVersion, 'workflowVersion');
       this.workflowVersion++;
       this.trigger("workflowVersion:change", this.workflowVersion);
       this.checkWorkflowVersion(workflowVersion);
