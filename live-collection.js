@@ -74,6 +74,7 @@
         return;
       }
       this.isRunning = true;
+      this.trigger("save:start", updates, this);
       return this.doSave(updates, _.bind(this.finishSave, this));
     };
 
@@ -89,7 +90,7 @@
       })(this));
       this.isRunning = false;
       this.workflowVersion++;
-      this.trigger("change:workflowVersion", this.workflowVersion);
+      this.trigger("workflowVersion:change", this.workflowVersion);
       this.checkWorkflowVersion(data.workflowVersion);
       this.trigger("save:done", this.workflowVersion);
       return this.debounceSave();
