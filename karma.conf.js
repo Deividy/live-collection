@@ -1,6 +1,6 @@
 module.exports = function(config) {
     config.set({
-        basePath: '../',
+        basePath: '',
 
         frameworks: ['mocha'],
 
@@ -12,12 +12,12 @@ module.exports = function(config) {
             'node_modules/jquery/dist/jquery.js',
 
             'live-collection.js',
-            'test/specs/*.spec.*'
+            'specs/*.spec.*'
         ],
 
 
         preprocessors: {
-            'test/specs/*.spec.coffee': [ 'coffee' ]
+            'specs/*.spec.coffee': [ 'coffee' ]
         },
 
         coffeePreprocessor: {
