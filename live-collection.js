@@ -588,7 +588,6 @@
         if ($textField.length > 0) {
           this.textFields[attribute] = $textField;
         }
-        console.log(this.$);
       }
       this.bindEvents();
     }
