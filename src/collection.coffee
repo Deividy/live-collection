@@ -22,9 +22,17 @@
 # refresh: end = (workflowVersion) ->   
 
 # for sync have to implemenet .doSave(), .doDelete(), .doCreate(), .doRefresh()
+#
 # doSave: (updates, callback) -> 
+#  The callback expects an hash of the updates, like { id: obj }
+#
+#
 # doDelete: (model, callback) ->
+#
+#
 # doCreate (callback) -> 
+#
+#
 # doRefresh: (workflowVersion, callback) ->
 
 class LiveCollection
