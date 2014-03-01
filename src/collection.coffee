@@ -132,12 +132,16 @@ class LiveCollection
 
 
     checkWorkflowVersion: (workflowVersion) ->
+        F.demandGoodNumber(workflowVersion, 'workflowVersion')
+
         if (workflowVersion > @workflowVersion)
             return @refresh(workflowVersion)
 
         return true
 
     _preAdd: (obj) ->
+        F.demandGoodObject(obj, 'obj')
+
         unless obj.isLiveModel
             return liveModel(obj, @)
 

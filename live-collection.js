@@ -116,6 +116,7 @@
     };
 
     LiveCollection.prototype.checkWorkflowVersion = function(workflowVersion) {
+      F.demandGoodNumber(workflowVersion, 'workflowVersion');
       if (workflowVersion > this.workflowVersion) {
         return this.refresh(workflowVersion);
       }
@@ -123,6 +124,7 @@
     };
 
     LiveCollection.prototype._preAdd = function(obj) {
+      F.demandGoodObject(obj, 'obj');
       if (!obj.isLiveModel) {
         return liveModel(obj, this);
       }
