@@ -20,6 +20,7 @@ class LiveModel
 
     refresh: () -> @previousValues = _.pick(@, @attributes)
 
+    ## Wrappers
     initWrappers: (@lastSelector) ->
         F.demandGoodString(@lastSelector, 'lastSelector')
 
@@ -40,6 +41,28 @@ class LiveModel
         
         return lw
 
+    resetWrappers: () ->
+        @liveWrappers = [ ]
+
+    getWrapper: ($container) ->
+        #F.demandSelector($container, '$container')
+        
+        $containers = @$()
+        for lw in @liveWrappers
+            if ($containers.index(lw.$) == $containers.index($container))
+                return lw
+
+        throw new Error("Wrapper not found for #{$container}")
+
+    $: () ->
+        $dom = $()
+        return $dom if (@liveWrappers.length == 0)
+
+        $dom = $dom.add(lw.$) for lw in @liveWrappers
+
+        return $dom
+ 
+    ## Events
     bindEvents: (lw) ->
         F.demandGoodObject(lw, 'lw')
 
@@ -63,6 +86,24 @@ class LiveModel
 
         @setValue(name, val)
 
+    # Setters
+    setValue: (attribute, val) ->
+        F.demandGoodString(attribute, 'attribute')
+        val = @sanitizeValue(attribute, val)
+
+        hasChanged = (@[attribute] != val)
+
+        @[attribute] = val
+
+        if (hasChanged)
+            @liveCollection.trigger("model:change", attribute, val, @)
+        
+        @setValueInWrappers(attribute, val)
+
+    setValues: (values) ->
+        F.demandGoodObject(values, 'values')
+        @setValue(key, val) for key, val of values
+
     setValueInWrappers: (attribute, value) ->
         for lw in @liveWrappers
             if (lw.fields[attribute])
@@ -74,19 +115,23 @@ class LiveModel
 
         return
 
-    resetWrappers: () ->
-        @liveWrappers = [ ]
+    sanitizeValue: (attribute, value) ->
+        F.demandGoodString(attribute, 'attribute')
+        # TODO:
+        return value
 
-    findWrapper: ($container) ->
-        #F.demandSelector($container, '$container')
-        
-        $containers = @$()
-        for lw in @liveWrappers
-            if ($containers.index(lw.$) == $containers.index($container))
-                return lw
+    applyChanges: () ->
+        values = { }
 
-        throw new Error("Wrapper not found for #{$container}")
+        for attr in @attributes
+            if (@[attr] != @previousValues[attr])
+                values[attr] = @[attr]
 
+        return if (_.isEmpty(values))
+
+        lw.populate(values) for lw in @liveWrappers
+
+    ## Dirty / Change
     isDirty: () ->
         return (@dirtyAttributes().length > 0)
 
@@ -117,50 +162,8 @@ class LiveModel
 
         return changes
 
-    sanitizeValue: (attribute, value) ->
-        F.demandGoodString(attribute, 'attribute')
-        # TODO:
-        return value
-
-    setValue: (attribute, val) ->
-        F.demandGoodString(attribute, 'attribute')
-        val = @sanitizeValue(attribute, val)
-
-        hasChanged = (@[attribute] != val)
-
-        @[attribute] = val
-
-        if (hasChanged)
-            @liveCollection.trigger("model:change", attribute, val, @)
-        
-        @setValueInWrappers(attribute, val)
-
-    setValues: (values) ->
-        F.demandGoodObject(values, 'values')
-        @setValue(key, val) for key, val of values
-
-    applyChanges: () ->
-        values = { }
-
-        for attr in @attributes
-            if (@[attr] != @previousValues[attr])
-                values[attr] = @[attr]
-
-        return if (_.isEmpty(values))
-
-        lw.populate(values) for lw in @liveWrappers
-
     destroy: () ->
         lw.destroy() for lw in @liveWrappers
         delete @
-
-    $: () ->
-        $dom = $()
-        return $dom if (@liveWrappers.length == 0)
-
-        $dom = $dom.add(lw.$) for lw in @liveWrappers
-
-        return $dom
-
 
 @liveModel.Class = LiveModel

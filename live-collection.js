@@ -342,6 +342,37 @@
       return lw;
     };
 
+    LiveModel.prototype.resetWrappers = function() {
+      return this.liveWrappers = [];
+    };
+
+    LiveModel.prototype.getWrapper = function($container) {
+      var $containers, lw, _i, _len, _ref;
+      $containers = this.$();
+      _ref = this.liveWrappers;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        lw = _ref[_i];
+        if ($containers.index(lw.$) === $containers.index($container)) {
+          return lw;
+        }
+      }
+      throw new Error("Wrapper not found for " + $container);
+    };
+
+    LiveModel.prototype.$ = function() {
+      var $dom, lw, _i, _len, _ref;
+      $dom = $();
+      if (this.liveWrappers.length === 0) {
+        return $dom;
+      }
+      _ref = this.liveWrappers;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        lw = _ref[_i];
+        $dom = $dom.add(lw.$);
+      }
+      return $dom;
+    };
+
     LiveModel.prototype.bindEvents = function(lw) {
       var field, name, _ref;
       F.demandGoodObject(lw, 'lw');
@@ -367,6 +398,29 @@
       return this.setValue(name, val);
     };
 
+    LiveModel.prototype.setValue = function(attribute, val) {
+      var hasChanged;
+      F.demandGoodString(attribute, 'attribute');
+      val = this.sanitizeValue(attribute, val);
+      hasChanged = this[attribute] !== val;
+      this[attribute] = val;
+      if (hasChanged) {
+        this.liveCollection.trigger("model:change", attribute, val, this);
+      }
+      return this.setValueInWrappers(attribute, val);
+    };
+
+    LiveModel.prototype.setValues = function(values) {
+      var key, val, _results;
+      F.demandGoodObject(values, 'values');
+      _results = [];
+      for (key in values) {
+        val = values[key];
+        _results.push(this.setValue(key, val));
+      }
+      return _results;
+    };
+
     LiveModel.prototype.setValueInWrappers = function(attribute, value) {
       var lw, _i, _len, _ref;
       _ref = this.liveWrappers;
@@ -382,21 +436,31 @@
       }
     };
 
-    LiveModel.prototype.resetWrappers = function() {
-      return this.liveWrappers = [];
+    LiveModel.prototype.sanitizeValue = function(attribute, value) {
+      F.demandGoodString(attribute, 'attribute');
+      return value;
     };
 
-    LiveModel.prototype.findWrapper = function($container) {
-      var $containers, lw, _i, _len, _ref;
-      $containers = this.$();
-      _ref = this.liveWrappers;
+    LiveModel.prototype.applyChanges = function() {
+      var attr, lw, values, _i, _j, _len, _len1, _ref, _ref1, _results;
+      values = {};
+      _ref = this.attributes;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        lw = _ref[_i];
-        if ($containers.index(lw.$) === $containers.index($container)) {
-          return lw;
+        attr = _ref[_i];
+        if (this[attr] !== this.previousValues[attr]) {
+          values[attr] = this[attr];
         }
       }
-      throw new Error("Wrapper not found for " + $container);
+      if (_.isEmpty(values)) {
+        return;
+      }
+      _ref1 = this.liveWrappers;
+      _results = [];
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        lw = _ref1[_j];
+        _results.push(lw.populate(values));
+      }
+      return _results;
     };
 
     LiveModel.prototype.isDirty = function() {
@@ -434,56 +498,6 @@
       return changes;
     };
 
-    LiveModel.prototype.sanitizeValue = function(attribute, value) {
-      F.demandGoodString(attribute, 'attribute');
-      return value;
-    };
-
-    LiveModel.prototype.setValue = function(attribute, val) {
-      var hasChanged;
-      F.demandGoodString(attribute, 'attribute');
-      val = this.sanitizeValue(attribute, val);
-      hasChanged = this[attribute] !== val;
-      this[attribute] = val;
-      if (hasChanged) {
-        this.liveCollection.trigger("model:change", attribute, val, this);
-      }
-      return this.setValueInWrappers(attribute, val);
-    };
-
-    LiveModel.prototype.setValues = function(values) {
-      var key, val, _results;
-      F.demandGoodObject(values, 'values');
-      _results = [];
-      for (key in values) {
-        val = values[key];
-        _results.push(this.setValue(key, val));
-      }
-      return _results;
-    };
-
-    LiveModel.prototype.applyChanges = function() {
-      var attr, lw, values, _i, _j, _len, _len1, _ref, _ref1, _results;
-      values = {};
-      _ref = this.attributes;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        attr = _ref[_i];
-        if (this[attr] !== this.previousValues[attr]) {
-          values[attr] = this[attr];
-        }
-      }
-      if (_.isEmpty(values)) {
-        return;
-      }
-      _ref1 = this.liveWrappers;
-      _results = [];
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        lw = _ref1[_j];
-        _results.push(lw.populate(values));
-      }
-      return _results;
-    };
-
     LiveModel.prototype.destroy = function() {
       var lw, _i, _len, _ref;
       _ref = this.liveWrappers;
@@ -492,20 +506,6 @@
         lw.destroy();
       }
       return delete this;
-    };
-
-    LiveModel.prototype.$ = function() {
-      var $dom, lw, _i, _len, _ref;
-      $dom = $();
-      if (this.liveWrappers.length === 0) {
-        return $dom;
-      }
-      _ref = this.liveWrappers;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        lw = _ref[_i];
-        $dom = $dom.add(lw.$);
-      }
-      return $dom;
     };
 
     return LiveModel;
@@ -588,7 +588,7 @@
     LiveRender.prototype.remove = function(item, index) {
       var $el, wrapper;
       $el = this.container.children().eq(index);
-      wrapper = item.findWrapper($el);
+      wrapper = item.getWrapper($el);
       return wrapper.destroy();
     };
 

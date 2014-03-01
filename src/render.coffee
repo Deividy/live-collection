@@ -58,7 +58,7 @@ class LiveRender
     remove: (item, index) ->
         $el = @container.children().eq(index)
 
-        wrapper = item.findWrapper($el)
+        wrapper = item.getWrapper($el)
         wrapper.destroy()
     
     reset: (items) ->
