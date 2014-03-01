@@ -7,7 +7,11 @@
 # remove = (obj, index) ->
 # reset = (items, count) ->
 # count = (count) ->
+#
+# model:change = (attribute, value, model) ->
+#
 # workflowVersion:change = (workflowVersion) ->
+#
 # save: start = (updates) ->
 # save: done = (workflowVersion) ->
 # create: start = (liveCollection) ->
@@ -19,7 +23,7 @@
 
 # for sync have to implemenet .doSave(), .doDelete(), .doCreate(), .doRefresh()
 # doSave: (updates, callback) -> 
-# doDelete: (item, callback) ->
+# doDelete: (model, callback) ->
 # doCreate (callback) -> 
 # doRefresh: (workflowVersion, callback) ->
 
