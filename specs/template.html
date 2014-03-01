@@ -1,0 +1,29 @@
+<form>
+    <div class='user' data-rowid='1'>
+        <div class='first-name'>
+            <input type='text' name='firstName' />
+        </div>
+        <div class='last-name'>
+            <input type='text' name='lastName' />
+        </div>
+        
+        <div class='age'>
+            <input type='number' name='age' />
+        </div>
+    </div>
+</form>
+
+<ul id='items'></ul>
+
+<script id='item' type='text/template'>
+    <li data-rowid='<%= data.id %>'>
+        <div class='first-name'>
+            <input type='text' name='firstName' value='<%= data.firstName %>' />
+        </div>
+        <div class='last-name'>
+            <input type='text' name='lastName' value='<%= data.lastName %>' />
+        </div>
+        
+        <div class='age'><%= data.age %></div>
+    </li>
+</script>

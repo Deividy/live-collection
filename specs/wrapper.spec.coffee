@@ -7,7 +7,7 @@ lw = $container = null
 
 describe 'LiveWrapper', () ->
     beforeEach () ->
-        document.body.innerHTML = __html__['specs/wrapper.html']
+        document.body.innerHTML = __html__['specs/template.html']
 
         $container = $(".user[data-rowid='1']")
         lw = liveWrapper($container, attributes, attributeConfig)
