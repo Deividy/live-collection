@@ -129,3 +129,19 @@ describe 'LiveModel', () ->
             newValues: { firstName: 'Chuck', lastName: 'Norris' },
             previousValues: { firstName: 'Deividy', lastName: 'Metheler' }
         })
+
+
+    it 'applyChanges', () ->
+        $container = $("form div[data-rowid='1']")
+
+        m = liveModel(model2, liveCollectionEmpty)
+        m.wrap($container)
+
+        m.firstName = 'Chuck'
+        m.lastName = 'Norris'
+
+        m.applyChanges()
+
+        $container.find("input[name='firstName']").val().should.eql("Chuck")
+        $container.find("input[name='lastName']").val().should.eql("Norris") 
+

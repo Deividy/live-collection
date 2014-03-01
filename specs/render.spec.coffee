@@ -40,7 +40,6 @@ describe 'LiveRender', () ->
                 .find(".age").html()
                 .should.eql("#{item.age}")
 
-
     it 'test click event', (done) ->
         lr = liveRender({
             template: "#item",
