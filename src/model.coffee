@@ -37,7 +37,7 @@ class LiveModel
         @liveWrappers.push(lw)
 
         @bindEvents(lw)
-        #@forcePopulate(lw)
+        @forcePopulate(lw)
         
         return lw
 
@@ -53,6 +53,14 @@ class LiveModel
                 return lw
 
         throw new Error("Wrapper not found for #{$container}")
+
+    forcePopulate: (lw) ->
+        F.demandGoodObject(lw, 'lw')
+        lw.populate(_.pick(@, @attributes))
+
+    forcePopulateAll: () ->
+        values = _.pick(@, @attributes)
+        lw.populate(values) for lw in @liveWrappers
 
     $: () ->
         $dom = $()
@@ -86,7 +94,7 @@ class LiveModel
 
         @setValue(name, val)
 
-    # Setters
+    ## Setters
     setValue: (attribute, val) ->
         F.demandGoodString(attribute, 'attribute')
         val = @sanitizeValue(attribute, val)

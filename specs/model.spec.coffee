@@ -6,8 +6,12 @@ liveCollectionWithAttributes = liveCollection({
 })
 
 model = { id: 1, name: 'Anderson', karma: 50 }
+model2 = { id: 1, firstName: 'Deividy', lastName: 'Metheler', age: 23, karma: 10 }
 
 describe 'LiveModel', () ->
+    beforeEach () ->
+        document.body.innerHTML = __html__['specs/template.html']
+
     it 'instantiante and get changes', () ->
         m = liveModel(model, liveCollectionEmpty)
         m.karma = 20
@@ -63,3 +67,19 @@ describe 'LiveModel', () ->
 
         m.changes().previousValues.should.eql({})
         m.changes().newValues.should.eql({})
+
+    it 'test update DOM when wrap', () ->
+        $container = $("form div[data-rowid='1']")
+
+        $container.find("input[name='firstName']").val().should.eql("")
+        $container.find("input[name='lastName']").val().should.eql("")
+        $container.find("input[name='age']").val().should.eql("")
+        $container.find(".karma").html().should.eql("")
+
+        m = liveModel(model2, liveCollectionEmpty)
+        m.wrap($container)
+
+        $container.find("input[name='firstName']").val().should.eql("Deividy")
+        $container.find("input[name='lastName']").val().should.eql("Metheler")
+        $container.find("input[name='age']").val().should.eql("23")
+        $container.find(".karma").html().should.eql("10")

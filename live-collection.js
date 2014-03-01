@@ -339,6 +339,7 @@
       lw = liveWrapper($container, this.attributes);
       this.liveWrappers.push(lw);
       this.bindEvents(lw);
+      this.forcePopulate(lw);
       return lw;
     };
 
@@ -357,6 +358,23 @@
         }
       }
       throw new Error("Wrapper not found for " + $container);
+    };
+
+    LiveModel.prototype.forcePopulate = function(lw) {
+      F.demandGoodObject(lw, 'lw');
+      return lw.populate(_.pick(this, this.attributes));
+    };
+
+    LiveModel.prototype.forcePopulateAll = function() {
+      var lw, values, _i, _len, _ref, _results;
+      values = _.pick(this, this.attributes);
+      _ref = this.liveWrappers;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        lw = _ref[_i];
+        _results.push(lw.populate(values));
+      }
+      return _results;
     };
 
     LiveModel.prototype.$ = function() {
