@@ -2,15 +2,20 @@
 
 # Events are
 #
-# add: (obj, index) ->
-# update: (obj, index) ->
-# remove: (obj, index) ->
-# reset: (items, count) ->
-# count: (count) ->
+# add = (obj, index) ->
+# update = (obj, index) ->
+# remove = (obj, index) ->
+# reset = (items, count) ->
+# count = (count) ->
+# workflowVersion:change = (workflowVersion) ->
+# save: start = (updates) ->
+# save: done = (workflowVersion) ->
 
-# workflowVersion:change
-# save: start
-# save: done
+# for sync have to implemenet .doSave(), .doDelete(), .doAdd(), .doRefresh()
+# doSave: (updates, callback) -> 
+# doDelete: (item, callback) ->
+# doAdd: (callback) -> 
+# doRefresh: (workflowVersion, callback) ->
 
 class LiveCollection
     constructor: (options = {}) ->
@@ -29,16 +34,22 @@ class LiveCollection
         @isRunning = false
 
         @debounceSave = _.debounce(@save, 100)
-
-    doSave: (updates, callback) -> throw new Error("Not Implemented")
-    doDelete: (item, callback) -> throw new Error("Not Implemented")
-    doAdd: (callback) -> throw new Error("Not Implemented")
  
     comparator: (a, b) -> 0
     belongs: (o) -> true
     isFresher: (candidate, current) -> true
 
+    queue: (id) ->
+        F.demandGoodNumber(id, 'id')
+
+        return unless _.isFunction(@doSave)
+
+        @queueById[id] = @lines[id]
+        @debounceSave()
+
     save: () ->
+        F.demandGoodFunction(@doSave, 'doSave')
+
         return if (_.isEmpty(@queueById) || @isRunning)
 
         @lastSave = [ ]
@@ -54,7 +65,7 @@ class LiveCollection
 
         @isRunning = true
 
-        @trigger("save:start", updates, @)
+        @trigger("save:start", updates)
         @doSave(updates, _.bind(@finishSave, @))
 
     finishSave: (itemsById) ->

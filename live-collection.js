@@ -29,18 +29,6 @@
       this.debounceSave = _.debounce(this.save, 100);
     }
 
-    LiveCollection.prototype.doSave = function(updates, callback) {
-      throw new Error("Not Implemented");
-    };
-
-    LiveCollection.prototype.doDelete = function(item, callback) {
-      throw new Error("Not Implemented");
-    };
-
-    LiveCollection.prototype.doAdd = function(callback) {
-      throw new Error("Not Implemented");
-    };
-
     LiveCollection.prototype.comparator = function(a, b) {
       return 0;
     };
@@ -53,8 +41,18 @@
       return true;
     };
 
+    LiveCollection.prototype.queue = function(id) {
+      F.demandGoodNumber(id, 'id');
+      if (!_.isFunction(this.doSave)) {
+        return;
+      }
+      this.queueById[id] = this.lines[id];
+      return this.debounceSave();
+    };
+
     LiveCollection.prototype.save = function() {
       var changes, item, _i, _len, _ref;
+      F.demandGoodFunction(this.doSave, 'doSave');
       if (_.isEmpty(this.queueById) || this.isRunning) {
         return;
       }
@@ -425,6 +423,7 @@
       this[attribute] = val;
       if (hasChanged) {
         this.liveCollection.trigger("model:change", attribute, val, this);
+        this.liveCollection.queue(this.id);
       }
       return this.setValueInWrappers(attribute, val);
     };
