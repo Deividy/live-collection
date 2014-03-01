@@ -70,8 +70,9 @@ describe 'LiveRender', () ->
             scrollWrapper: 'ul#items',
             templateVariable: 'data',
             liveCollection: lc,
-            onCount: (count, lr) ->
+            onCount: (count) ->
                 count.should.eql(4)
+                @.should.eql(lr)
                 done()
         })
 
