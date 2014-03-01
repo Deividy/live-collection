@@ -10,11 +10,17 @@
 # workflowVersion:change = (workflowVersion) ->
 # save: start = (updates) ->
 # save: done = (workflowVersion) ->
+# create: start = (liveCollection) ->
+# create: end = (data, workflowVersion) ->   
+# delete: start = (model) ->
+# delete: end = (workflowVersion) ->   
+# refresh: start = (workflowVersion) ->
+# refresh: end = (workflowVersion) ->   
 
-# for sync have to implemenet .doSave(), .doDelete(), .doAdd(), .doRefresh()
+# for sync have to implemenet .doSave(), .doDelete(), .doCreate(), .doRefresh()
 # doSave: (updates, callback) -> 
 # doDelete: (item, callback) ->
-# doAdd: (callback) -> 
+# doCreate (callback) -> 
 # doRefresh: (workflowVersion, callback) ->
 
 class LiveCollection

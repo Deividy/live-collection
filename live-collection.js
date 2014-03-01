@@ -72,7 +72,7 @@
         return;
       }
       this.isRunning = true;
-      this.trigger("save:start", updates, this);
+      this.trigger("save:start", updates);
       return this.doSave(updates, _.bind(this.finishSave, this));
     };
 
