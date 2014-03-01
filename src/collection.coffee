@@ -24,7 +24,7 @@
 # for sync have to implemenet .doSave(), .doDelete(), .doCreate(), .doRefresh()
 #
 # doSave: (updates, callback) -> 
-#  The callback expects an hash of the updates, like { id: obj }
+#  The callback expects an hash of the updates, like { id1: obj, id2: obj }
 #
 #
 # doDelete: (model, callback) ->
@@ -56,6 +56,21 @@ class LiveCollection
     comparator: (a, b) -> 0
     belongs: (o) -> true
     isFresher: (candidate, current) -> true
+
+    delete: (id) ->
+        item = @get({ id })
+        
+        @trigger('delete:start', item)
+        @doDelete(item, _.bind(@finishDelete, @))
+
+        @remove(item)
+
+    finishDelete: (workflowVersion) ->
+        @workflowVersion++
+        @trigger("workflowVersion:change", @workflowVersion)
+
+        @checkWorkflowVersion(workflowVersion)
+        @trigger('delete:done', workflowVersion)
 
     queue: (id) ->
         F.demandGoodNumber(id, 'id')
@@ -259,8 +274,11 @@ class LiveCollection
         index ?= @binarySearch(obj)
         delete @byId[obj.id]
         @items.splice(index, 1)
+        
         @trigger("remove", obj, index)
         @trigger("count", @items.length)
+
+        obj.destroy()
 
         return @
 

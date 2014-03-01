@@ -213,3 +213,22 @@ describe 'LiveCollection', () ->
         c.queue(0)
         c.save()
 
+    it 'delete tests', (done) ->
+        c = testCollection({
+            doDelete: (item, callback) ->
+                item.id.should.be.eql(0)
+                callback(1)
+        })
+
+        c.on('delete:start', (item) -> item.id.should.be.eql(0))
+
+        c.on('delete:done', (workflowVersion) ->
+            workflowVersion.should.eql(1)
+            done()
+        )
+
+        c.reset(karmaArray())
+
+        c.delete(0)
+
+

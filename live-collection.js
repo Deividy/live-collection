@@ -41,6 +41,23 @@
       return true;
     };
 
+    LiveCollection.prototype["delete"] = function(id) {
+      var item;
+      item = this.get({
+        id: id
+      });
+      this.trigger('delete:start', item);
+      this.doDelete(item, _.bind(this.finishDelete, this));
+      return this.remove(item);
+    };
+
+    LiveCollection.prototype.finishDelete = function(workflowVersion) {
+      this.workflowVersion++;
+      this.trigger("workflowVersion:change", this.workflowVersion);
+      this.checkWorkflowVersion(workflowVersion);
+      return this.trigger('delete:done', workflowVersion);
+    };
+
     LiveCollection.prototype.queue = function(id) {
       F.demandGoodNumber(id, 'id');
       if (!_.isFunction(this.doSave)) {
@@ -293,6 +310,7 @@
       this.items.splice(index, 1);
       this.trigger("remove", obj, index);
       this.trigger("count", this.items.length);
+      obj.destroy();
       return this;
     };
 
