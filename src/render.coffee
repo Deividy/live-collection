@@ -1,4 +1,4 @@
-liveRender = @liveRender = (options) -> new LiveRender(options)
+@liveRender = (options) -> new LiveRender(options)
 
 class LiveRender
     constructor: (options = {}) ->
@@ -60,4 +60,4 @@ class LiveRender
 
     count: (count) -> @count.text(count)
 
-liveRender.Class = LiveRender
+@liveRender.Class = LiveRender

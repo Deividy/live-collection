@@ -1,4 +1,4 @@
-liveCollection = @liveCollection =  (options) -> new LiveCollection(options)
+@liveCollection = (options) -> new LiveCollection(options)
 
 # Events are
 #
@@ -223,4 +223,4 @@ class LiveCollection
 
         return @
 
-liveCollection.Class = LiveCollection
+@liveCollection.Class = LiveCollection

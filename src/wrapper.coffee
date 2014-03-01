@@ -1,5 +1,4 @@
-liveWrapper = @lineWrapper = ($container, attributes) ->
-    return new LiveWrapper($container, attributes)
+@liveWrapper = ($container, attrs) -> new LiveWrapper($container, attrs)
 
 numberKeyCodes = [
     188, 190, 8, 9, 46, 48, 49, 50, 51, 52, 53, 54, 55, 56,
@@ -57,4 +56,4 @@ class LiveWrapper
     destroy: () ->
         @$.remove()
 
-liveWrapper.Class = LiveWrapper
+@liveWrapper.Class = LiveWrapper

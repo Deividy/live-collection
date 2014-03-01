@@ -1,8 +1,8 @@
 (function() {
-  var LiveCollection, LiveModel, LiveRender, LiveWrapper, liveCollection, liveModel, liveRender, liveWrapper, numberKeyCodes,
+  var LiveCollection, LiveModel, LiveRender, LiveWrapper, numberKeyCodes,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-  liveCollection = this.liveCollection = function(options) {
+  this.liveCollection = function(options) {
     return new LiveCollection(options);
   };
 
@@ -294,9 +294,9 @@
 
   })();
 
-  liveCollection.Class = LiveCollection;
+  this.liveCollection.Class = LiveCollection;
 
-  liveModel = this.liveModel = function(data, collection) {
+  this.liveModel = function(data, collection) {
     return new LiveModel(data, collection);
   };
 
@@ -458,9 +458,9 @@
 
   })();
 
-  liveModel.Class = LiveModel;
+  this.liveModel.Class = LiveModel;
 
-  liveRender = this.liveRender = function(options) {
+  this.liveRender = function(options) {
     return new LiveRender(options);
   };
 
@@ -556,10 +556,10 @@
 
   })();
 
-  liveRender.Class = LiveRender;
+  this.liveRender.Class = LiveRender;
 
-  liveWrapper = this.lineWrapper = function($container, attributes) {
-    return new LiveWrapper($container, attributes);
+  this.liveWrapper = function($container, attrs) {
+    return new LiveWrapper($container, attrs);
   };
 
   numberKeyCodes = [188, 190, 8, 9, 46, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 110];
@@ -642,6 +642,6 @@
 
   })();
 
-  liveWrapper.Class = LiveWrapper;
+  this.liveWrapper.Class = LiveWrapper;
 
 }).call(this);

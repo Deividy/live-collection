@@ -1,4 +1,4 @@
-liveModel = @liveModel = (data, collection) -> new LiveModel(data, collection)
+@liveModel = (data, collection) -> new LiveModel(data, collection)
 
 class LiveModel
     constructor: (@originalData, @liveCollection) ->
@@ -115,4 +115,4 @@ class LiveModel
         return $dom
 
 
-liveModel.Class = LiveModel
+@liveModel.Class = LiveModel
