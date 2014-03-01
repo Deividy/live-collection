@@ -60,3 +60,17 @@ describe 'LiveWrapper', () ->
             preventDefault: done
         })
 
+    it 'populate test', () ->
+        lw.populate({ firstName: 'Anderson', lastName: 'Silva', age: 38 })
+
+        $container
+            .find("input[name='firstName']").val()
+            .should.eql("Anderson")
+
+        $container
+            .find("input[name='lastName']").val()
+            .should.eql("Silva")
+
+        $container
+            .find("input[name='age']").val()
+            .should.eql("38")

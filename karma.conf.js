@@ -1,3 +1,9 @@
+var browsers = [ 'Firefox', 'PhantomJS' ];
+
+if (!process.env.TRAVIS) {
+    browsers.push('Chrome');
+}
+
 module.exports = function(config) {
     config.set({
         basePath: '',
@@ -41,7 +47,7 @@ module.exports = function(config) {
         logLevel: config.LOG_INFO,
         autoWatch: false,
         
-        browsers: ['Firefox', 'PhantomJS'],
+        browsers: browsers,
 
         captureTimeout: 60000,
         singleRun: true
