@@ -14,6 +14,7 @@
 </form>
 
 <ul id='items'></ul>
+<ul id='itemsReadOnly'></ul>
 
 <script id='item' type='text/template'>
     <li data-rowid='<%= data.id %>'>
@@ -22,6 +23,19 @@
         </div>
         <div class='last-name'>
             <input type='text' name='lastName' value='<%= data.lastName %>' />
+        </div>
+        
+        <div class='age'><%= data.age %></div>
+    </li>
+</script>
+
+<script id='itemReadOnly' type='text/template'>
+    <li data-rowid='<%= data.id %>'>
+        <div class='first-name'>
+            <%= data.firstName %>
+        </div>
+        <div class='last-name'>
+            <%= data.lastName %>
         </div>
         
         <div class='age'><%= data.age %></div>

@@ -13,7 +13,6 @@ class LiveRender
         @lc = options.liveCollection
 
         @lc.on("add", @add, @)
-        @lc.on("update", @update, @)
         @lc.on("remove", @remove, @)
         @lc.on("reset", @reset, @)
 
@@ -38,7 +37,7 @@ class LiveRender
         id = Number(container.data("rowid"))
         # SHOULD: test with isGoodNumber here
         item = @lc.get(id)
-        handler(item)
+        handler(item, e)
 
     add: (item, index) ->
         html = @render(item).trim()
@@ -48,7 +47,9 @@ class LiveRender
         else
             el.insertAfter(@container.children().eq(index - 1)).fadeIn()
 
-    update: (item, index) ->
+    update: (item) ->
+        index = @lc.binarySearch(item)
+
         html = @render(item).trim()
         @container.children().eq(index).replaceWith(html)
 

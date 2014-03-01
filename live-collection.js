@@ -484,7 +484,6 @@
       this.container = $(options.container);
       this.lc = options.liveCollection;
       this.lc.on("add", this.add, this);
-      this.lc.on("update", this.update, this);
       this.lc.on("remove", this.remove, this);
       this.lc.on("reset", this.reset, this);
       if (_.isFunction(options.onCount)) {
@@ -511,7 +510,7 @@
       }
       id = Number(container.data("rowid"));
       item = this.lc.get(id);
-      return handler(item);
+      return handler(item, e);
     };
 
     LiveRender.prototype.add = function(item, index) {
@@ -525,8 +524,9 @@
       }
     };
 
-    LiveRender.prototype.update = function(item, index) {
-      var html;
+    LiveRender.prototype.update = function(item) {
+      var html, index;
+      index = this.lc.binarySearch(item);
       html = this.render(item).trim();
       return this.container.children().eq(index).replaceWith(html);
     };

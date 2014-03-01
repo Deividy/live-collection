@@ -28,6 +28,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-karma');
 
-    grunt.registerTask('default', [ 'coffee:compile', 'uglify:prod' ]);
+    grunt.registerTask('default', [ 'coffee:compile', 'uglify:prod', 'karma:unit' ]);
     grunt.registerTask('test', [ 'coffee:compile', 'karma:unit' ]);
 };
