@@ -1,262 +1,6 @@
 (function() {
-  var $, Backbone, F, LiveCollection, LiveModel, LiveRender, LiveWrapper, liveCollection, liveModel, liveRender, liveWrapper, numberKeyCodes, _,
+  var LiveCollection, LiveModel, LiveRender, LiveWrapper, liveCollection, liveModel, liveRender, liveWrapper, numberKeyCodes,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
-
-  _ = this._, F = this.F;
-
-  liveWrapper = this.lineWrapper = function($container, attributes) {
-    return new LiveWrapper($container, attributes);
-  };
-
-  numberKeyCodes = [188, 190, 8, 9, 46, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 110];
-
-  LiveWrapper = (function() {
-    function LiveWrapper($, attributes, attributeConfig) {
-      var $field, $textField, attribute, _i, _len, _ref;
-      this.$ = $;
-      this.attributes = attributes;
-      this.attributeConfig = attributeConfig != null ? attributeConfig : {};
-      F.demandSelector(this.$, "$");
-      F.demandArrayOfGoodStrings(this.attributes, 'attributes');
-      this.fields = {};
-      this.textFields = {};
-      _ref = this.attributes;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        attribute = _ref[_i];
-        $field = this.$.find("[name='" + attribute + "']");
-        $textField = this.$.find("." + attribute);
-        if ($field.length > 0) {
-          this.fields[attribute] = $field;
-          continue;
-        }
-        if ($textField.length > 0) {
-          this.textFields[attribute] = $textField;
-        }
-      }
-      this.bindEvents();
-    }
-
-    LiveWrapper.prototype.bindEvents = function() {
-      var $field, name, _ref;
-      _ref = this.fields;
-      for (name in _ref) {
-        $field = _ref[name];
-        $field.on("keydown", this.onFieldKeyDown);
-        $field.on('focus', this.onFieldFocus);
-      }
-    };
-
-    LiveWrapper.prototype.onFieldFocus = function(ev) {
-      var $el, _ref;
-      $el = $(ev.currentTarget);
-      if ((_ref = ev.currentTarget.name, __indexOf.call(this.attributeConfig.numbers, _ref) >= 0)) {
-        if (Number($el.val()) === 0) {
-          return $el.val("");
-        }
-      }
-    };
-
-    LiveWrapper.prototype.onFieldKeyDown = function(ev) {
-      var _ref, _ref1;
-      F.demandGoodNumber(ev.keyCode, 'ev.keyCode');
-      F.demandFunction(ev.preventDefault, 'ev.preventDefault');
-      if ((_ref = ev.currentTarget.name, __indexOf.call(this.attributeConfig.numbers, _ref) >= 0)) {
-        if ((_ref1 = ev.keyCode, __indexOf.call(numberKeyCodes, _ref1) < 0)) {
-          return ev.preventDefault();
-        }
-      }
-    };
-
-    LiveWrapper.prototype.populate = function(values) {
-      var key, value;
-      for (key in values) {
-        value = values[key];
-        if ((this.fields[key] != null)) {
-          this.fields[key].val(value);
-        }
-        if ((this.textFields[key] != null)) {
-          this.textFields[key].html(value);
-        }
-      }
-    };
-
-    LiveWrapper.prototype.destroy = function() {
-      return this.$.remove();
-    };
-
-    return LiveWrapper;
-
-  })();
-
-  liveWrapper.Class = LiveWrapper;
-
-  Backbone = this.Backbone, _ = this._, F = this.F, liveWrapper = this.liveWrapper;
-
-  liveModel = this.liveModel = function(data, collection) {
-    return new LiveModel(data, collection);
-  };
-
-  LiveModel = (function() {
-    function LiveModel(originalData, liveCollection) {
-      var _ref, _ref1;
-      this.originalData = originalData;
-      this.liveCollection = liveCollection;
-      F.demandGoodObject(this.originalData, 'originalData');
-      F.demandGoodNumber(this.originalData.id, 'originalData.id');
-      F.demandGoodObject(this.liveCollection, 'liveCollection');
-      this.attributes = (_ref = this.liveCollection.attributes) != null ? _ref : _.keys(this.originalData);
-      this.attributeConfig = (_ref1 = this.liveCollection.attributeConfig) != null ? _ref1 : {};
-      _.extend(this, _.pick(this.originalData, this.attributes));
-      this.previousValues = {};
-      this.liveWrappers = [];
-      this.refresh();
-      this.isLiveModel = true;
-    }
-
-    LiveModel.prototype.refresh = function() {
-      return this.previousValues = _.pick(this, this.attributes);
-    };
-
-    LiveModel.prototype.initWrappers = function(lastSelector) {
-      var container, _i, _len, _ref;
-      this.lastSelector = lastSelector;
-      F.demandGoodString(this.lastSelector, 'lastSelector');
-      _ref = $(this.lastSelector);
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        container = _ref[_i];
-        this.wrap($(container));
-      }
-    };
-
-    LiveModel.prototype.wrap = function($container) {
-      var lineWrapper;
-      F.demandSelector($container, '$container');
-      lineWrapper = liveWrapper($container, this.attributes);
-      this.lineWrappers.push(lineWrapper);
-      this.bindEvents(lineWrapper);
-      this.forcePopulate(lineWrapper);
-      return lineWrapper;
-    };
-
-    LiveModel.prototype.resetWrappers = function() {
-      return this.lineWrappers = [];
-    };
-
-    LiveModel.prototype.isDirty = function() {
-      return this.dirtyAttributes().length > 0;
-    };
-
-    LiveModel.prototype.dirtyAttributes = function() {
-      var attr, dirtyAttributes, _i, _len, _ref;
-      dirtyAttributes = [];
-      _ref = this.attributes;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        attr = _ref[_i];
-        if (this[attr] !== this.previousValues[attr]) {
-          dirtyAttributes.push(attr);
-        }
-      }
-      return dirtyAttributes;
-    };
-
-    LiveModel.prototype.changes = function() {
-      var changes, dirtyAttributes, key, pv, val, _i, _len, _ref;
-      dirtyAttributes = this.dirtyAttributes();
-      changes = {
-        id: this.id,
-        newValues: _.pick(this, dirtyAttributes),
-        previousValues: _.pick(this.previousValues, dirtyAttributes)
-      };
-      _ref = changes.newValues;
-      for (val = _i = 0, _len = _ref.length; _i < _len; val = ++_i) {
-        key = _ref[val];
-        pv = changes.previousValues[key];
-        changes.newValues[key] = this.sanitizeValue(key, val);
-        changes.previousValues[key] = this.sanitizeValue(key, pv);
-      }
-      return changes;
-    };
-
-    LiveModel.prototype.sanitizeValue = function(attribute, value) {
-      F.demandGoodString(attribute, 'attribute');
-      return value;
-    };
-
-    LiveModel.prototype.setValue = function(attribute, val) {
-      var hasChanged;
-      F.demandGoodString(attribute, 'attribute');
-      val = this.sanitizeValue(attribute, val);
-      hasChanged = this[attribute] !== val;
-      this[attribute] = val;
-      if (hasChanged) {
-        return this.liveCollection.trigger("model:change", attribute, val, this);
-      }
-    };
-
-    LiveModel.prototype.setValues = function(values) {
-      var key, val, _results;
-      F.demandGoodObject(values, 'values');
-      _results = [];
-      for (key in values) {
-        val = values[key];
-        _results.push(this.setValue(key, val));
-      }
-      return _results;
-    };
-
-    LiveModel.prototype.applyChanges = function() {
-      var attr, lineWrapper, values, _i, _j, _len, _len1, _ref, _ref1, _results;
-      values = {};
-      _ref = this.attributes;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        attr = _ref[_i];
-        if (this[attr] !== this.previousValues[attr]) {
-          values[attr] = this[attr];
-        }
-      }
-      if (_.isEmpty(values)) {
-        return;
-      }
-      _ref1 = this.lineWrappers;
-      _results = [];
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        lineWrapper = _ref1[_j];
-        _results.push(lineWrapper.populate(values));
-      }
-      return _results;
-    };
-
-    LiveModel.prototype.destroy = function() {
-      var lineWrapper, _i, _len, _ref;
-      _ref = this.lineWrappers;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        lineWrapper = _ref[_i];
-        lineWrapper.destroy();
-      }
-      return delete this;
-    };
-
-    LiveModel.prototype.$ = function() {
-      var $dom, lineWrapper, _i, _len, _ref;
-      $dom = $();
-      if (this.lineWrappers.length === 0) {
-        return $dom;
-      }
-      _ref = this.lineWrappers;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        lineWrapper = _ref[_i];
-        $dom = $dom.add(lineWrapper.$);
-      }
-      return $dom;
-    };
-
-    return LiveModel;
-
-  })();
-
-  liveModel.Class = LiveModel;
-
-  Backbone = this.Backbone, _ = this._, liveModel = this.liveModel;
 
   liveCollection = this.liveCollection = function(options) {
     return new LiveCollection(options);
@@ -552,7 +296,169 @@
 
   liveCollection.Class = LiveCollection;
 
-  $ = this.$, _ = this._;
+  liveModel = this.liveModel = function(data, collection) {
+    return new LiveModel(data, collection);
+  };
+
+  LiveModel = (function() {
+    function LiveModel(originalData, liveCollection) {
+      var _ref, _ref1;
+      this.originalData = originalData;
+      this.liveCollection = liveCollection;
+      F.demandGoodObject(this.originalData, 'originalData');
+      F.demandGoodNumber(this.originalData.id, 'originalData.id');
+      F.demandGoodObject(this.liveCollection, 'liveCollection');
+      this.attributes = (_ref = this.liveCollection.attributes) != null ? _ref : _.keys(this.originalData);
+      this.attributeConfig = (_ref1 = this.liveCollection.attributeConfig) != null ? _ref1 : {};
+      _.extend(this, _.pick(this.originalData, this.attributes));
+      this.previousValues = {};
+      this.liveWrappers = [];
+      this.refresh();
+      this.isLiveModel = true;
+    }
+
+    LiveModel.prototype.refresh = function() {
+      return this.previousValues = _.pick(this, this.attributes);
+    };
+
+    LiveModel.prototype.initWrappers = function(lastSelector) {
+      var container, _i, _len, _ref;
+      this.lastSelector = lastSelector;
+      F.demandGoodString(this.lastSelector, 'lastSelector');
+      _ref = $(this.lastSelector);
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        container = _ref[_i];
+        this.wrap($(container));
+      }
+    };
+
+    LiveModel.prototype.wrap = function($container) {
+      var lineWrapper;
+      F.demandSelector($container, '$container');
+      lineWrapper = liveWrapper($container, this.attributes);
+      this.lineWrappers.push(lineWrapper);
+      this.bindEvents(lineWrapper);
+      this.forcePopulate(lineWrapper);
+      return lineWrapper;
+    };
+
+    LiveModel.prototype.resetWrappers = function() {
+      return this.lineWrappers = [];
+    };
+
+    LiveModel.prototype.isDirty = function() {
+      return this.dirtyAttributes().length > 0;
+    };
+
+    LiveModel.prototype.dirtyAttributes = function() {
+      var attr, dirtyAttributes, _i, _len, _ref;
+      dirtyAttributes = [];
+      _ref = this.attributes;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        attr = _ref[_i];
+        if (this[attr] !== this.previousValues[attr]) {
+          dirtyAttributes.push(attr);
+        }
+      }
+      return dirtyAttributes;
+    };
+
+    LiveModel.prototype.changes = function() {
+      var changes, dirtyAttributes, key, pv, val, _i, _len, _ref;
+      dirtyAttributes = this.dirtyAttributes();
+      changes = {
+        id: this.id,
+        newValues: _.pick(this, dirtyAttributes),
+        previousValues: _.pick(this.previousValues, dirtyAttributes)
+      };
+      _ref = changes.newValues;
+      for (val = _i = 0, _len = _ref.length; _i < _len; val = ++_i) {
+        key = _ref[val];
+        pv = changes.previousValues[key];
+        changes.newValues[key] = this.sanitizeValue(key, val);
+        changes.previousValues[key] = this.sanitizeValue(key, pv);
+      }
+      return changes;
+    };
+
+    LiveModel.prototype.sanitizeValue = function(attribute, value) {
+      F.demandGoodString(attribute, 'attribute');
+      return value;
+    };
+
+    LiveModel.prototype.setValue = function(attribute, val) {
+      var hasChanged;
+      F.demandGoodString(attribute, 'attribute');
+      val = this.sanitizeValue(attribute, val);
+      hasChanged = this[attribute] !== val;
+      this[attribute] = val;
+      if (hasChanged) {
+        return this.liveCollection.trigger("model:change", attribute, val, this);
+      }
+    };
+
+    LiveModel.prototype.setValues = function(values) {
+      var key, val, _results;
+      F.demandGoodObject(values, 'values');
+      _results = [];
+      for (key in values) {
+        val = values[key];
+        _results.push(this.setValue(key, val));
+      }
+      return _results;
+    };
+
+    LiveModel.prototype.applyChanges = function() {
+      var attr, lineWrapper, values, _i, _j, _len, _len1, _ref, _ref1, _results;
+      values = {};
+      _ref = this.attributes;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        attr = _ref[_i];
+        if (this[attr] !== this.previousValues[attr]) {
+          values[attr] = this[attr];
+        }
+      }
+      if (_.isEmpty(values)) {
+        return;
+      }
+      _ref1 = this.lineWrappers;
+      _results = [];
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        lineWrapper = _ref1[_j];
+        _results.push(lineWrapper.populate(values));
+      }
+      return _results;
+    };
+
+    LiveModel.prototype.destroy = function() {
+      var lineWrapper, _i, _len, _ref;
+      _ref = this.lineWrappers;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        lineWrapper = _ref[_i];
+        lineWrapper.destroy();
+      }
+      return delete this;
+    };
+
+    LiveModel.prototype.$ = function() {
+      var $dom, lineWrapper, _i, _len, _ref;
+      $dom = $();
+      if (this.lineWrappers.length === 0) {
+        return $dom;
+      }
+      _ref = this.lineWrappers;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        lineWrapper = _ref[_i];
+        $dom = $dom.add(lineWrapper.$);
+      }
+      return $dom;
+    };
+
+    return LiveModel;
+
+  })();
+
+  liveModel.Class = LiveModel;
 
   liveRender = this.liveRender = function(options) {
     return new LiveRender(options);
@@ -651,5 +557,91 @@
   })();
 
   liveRender.Class = LiveRender;
+
+  liveWrapper = this.lineWrapper = function($container, attributes) {
+    return new LiveWrapper($container, attributes);
+  };
+
+  numberKeyCodes = [188, 190, 8, 9, 46, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 110];
+
+  LiveWrapper = (function() {
+    function LiveWrapper($, attributes, attributeConfig) {
+      var $field, $textField, attribute, _i, _len, _ref;
+      this.$ = $;
+      this.attributes = attributes;
+      this.attributeConfig = attributeConfig != null ? attributeConfig : {};
+      F.demandSelector(this.$, "$");
+      F.demandArrayOfGoodStrings(this.attributes, 'attributes');
+      this.fields = {};
+      this.textFields = {};
+      _ref = this.attributes;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        attribute = _ref[_i];
+        $field = this.$.find("[name='" + attribute + "']");
+        $textField = this.$.find("." + attribute);
+        if ($field.length > 0) {
+          this.fields[attribute] = $field;
+          continue;
+        }
+        if ($textField.length > 0) {
+          this.textFields[attribute] = $textField;
+        }
+      }
+      this.bindEvents();
+    }
+
+    LiveWrapper.prototype.bindEvents = function() {
+      var $field, name, _ref;
+      _ref = this.fields;
+      for (name in _ref) {
+        $field = _ref[name];
+        $field.on("keydown", this.onFieldKeyDown);
+        $field.on('focus', this.onFieldFocus);
+      }
+    };
+
+    LiveWrapper.prototype.onFieldFocus = function(ev) {
+      var $el, _ref;
+      $el = $(ev.currentTarget);
+      if ((_ref = ev.currentTarget.name, __indexOf.call(this.attributeConfig.numbers, _ref) >= 0)) {
+        if (Number($el.val()) === 0) {
+          return $el.val("");
+        }
+      }
+    };
+
+    LiveWrapper.prototype.onFieldKeyDown = function(ev) {
+      var _ref, _ref1;
+      F.demandGoodNumber(ev.keyCode, 'ev.keyCode');
+      F.demandFunction(ev.preventDefault, 'ev.preventDefault');
+      if ((_ref = ev.currentTarget.name, __indexOf.call(this.attributeConfig.numbers, _ref) >= 0)) {
+        if ((_ref1 = ev.keyCode, __indexOf.call(numberKeyCodes, _ref1) < 0)) {
+          return ev.preventDefault();
+        }
+      }
+    };
+
+    LiveWrapper.prototype.populate = function(values) {
+      var key, value;
+      for (key in values) {
+        value = values[key];
+        if ((this.fields[key] != null)) {
+          this.fields[key].val(value);
+        }
+        if ((this.textFields[key] != null)) {
+          this.textFields[key].html(value);
+        }
+      }
+    };
+
+    LiveWrapper.prototype.destroy = function() {
+      return this.$.remove();
+    };
+
+    return LiveWrapper;
+
+  })();
+
+  liveWrapper.Class = LiveWrapper;
 
 }).call(this);

@@ -1,5 +1,3 @@
-{ $, _ } = @
-
 liveRender = @liveRender = (options) -> new LiveRender(options)
 
 class LiveRender

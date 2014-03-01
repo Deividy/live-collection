@@ -1,5 +1,3 @@
-{ Backbone, _, F, liveWrapper } = @
-
 liveModel = @liveModel = (data, collection) -> new LiveModel(data, collection)
 
 class LiveModel

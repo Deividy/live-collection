@@ -1,5 +1,3 @@
-{ Backbone, _, liveModel } = @
-
 liveCollection = @liveCollection =  (options) -> new LiveCollection(options)
 
 # Events are

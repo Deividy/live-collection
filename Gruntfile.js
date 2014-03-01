@@ -1,12 +1,3 @@
-var src = __dirname + "/src",
-    source = [ 'wrapper', 'model', 'collection', 'render' ]
-
-var files = [ ];
-
-for (n = 0; n < source.length; n++) {
-    files.push(src + "/" + source[n] + ".coffee");
-}
-
 module.exports = function (grunt) {
     grunt.initConfig({
         coffee: {
@@ -15,7 +6,7 @@ module.exports = function (grunt) {
                     join: true
                 },
                 files: {
-                    'live-collection.js': files
+                    'live-collection.js': [ 'src/*.coffee' ]
                 }
             }
         },

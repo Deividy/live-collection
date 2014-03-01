@@ -1,7 +1,5 @@
-{ _, F } = @
-
 liveWrapper = @lineWrapper = ($container, attributes) ->
-    new LiveWrapper($container, attributes)
+    return new LiveWrapper($container, attributes)
 
 numberKeyCodes = [
     188, 190, 8, 9, 46, 48, 49, 50, 51, 52, 53, 54, 55, 56,
