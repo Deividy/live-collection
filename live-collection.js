@@ -24,7 +24,7 @@
         this.reset(options.items, options.preSorted);
       }
       this.queueById = {};
-      this.lastSave = [];
+      this.lastUpdates = [];
       this.isRunning = false;
       this.debounceSave = _.debounce(this.save, 100);
     }
@@ -46,17 +46,17 @@
       if (!_.isFunction(this.doSave)) {
         return;
       }
-      this.queueById[id] = this.lines[id];
+      this.queueById[id] = this.get(id);
       return this.debounceSave();
     };
 
     LiveCollection.prototype.save = function() {
       var changes, item, _i, _len, _ref;
-      F.demandGoodFunction(this.doSave, 'doSave');
+      F.demandFunction(this.doSave, 'doSave');
       if (_.isEmpty(this.queueById) || this.isRunning) {
         return;
       }
-      this.lastSave = [];
+      this.lastUpdates = [];
       _ref = _.values(this.queueById);
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         item = _ref[_i];
@@ -65,33 +65,39 @@
         }
         changes = item.changes();
         changes.id = item.id;
-        this.lastSave.push(changes);
+        this.lastUpdates.push(changes);
       }
       this.queueById = {};
-      if (_.isEmpty(update)) {
+      if (_.isEmpty(this.lastUpdates)) {
         return;
       }
       this.isRunning = true;
-      this.trigger("save:start", updates);
-      return this.doSave(updates, _.bind(this.finishSave, this));
+      this.trigger("save:start", this.lastUpdates);
+      return this.doSave(this.lastUpdates, _.bind(this.finishSave, this));
     };
 
-    LiveCollection.prototype.finishSave = function(itemsById) {
-      _.each(this.lastSave, (function(_this) {
+    LiveCollection.prototype.finishSave = function(itemsById, workflowVersion) {
+      _.each(this.lastUpdates, (function(_this) {
         return function(changes) {
           var item, responseItem;
           item = _this.byId[changes.id];
           responseItem = itemsById[changes.id];
-          _.extend(item.previousValues, changes.newValues);
-          return _this.applyDbValues(changes.id, responseItem);
+          return _.extend(item.previousValues, changes.newValues);
         };
       })(this));
       this.isRunning = false;
       this.workflowVersion++;
       this.trigger("workflowVersion:change", this.workflowVersion);
-      this.checkWorkflowVersion(data.workflowVersion);
+      this.checkWorkflowVersion(workflowVersion);
       this.trigger("save:done", this.workflowVersion);
       return this.debounceSave();
+    };
+
+    LiveCollection.prototype.checkWorkflowVersion = function(workflowVersion) {
+      if (workflowVersion > this.workflowVersion) {
+        return this.refresh(workflowVersion);
+      }
+      return true;
     };
 
     LiveCollection.prototype._preAdd = function(obj) {

@@ -40,7 +40,7 @@ class LiveCollection
         @reset(options.items, options.preSorted) if options.items?
 
         @queueById = { }
-        @lastSave = [ ]
+        @lastUpdates = [ ]
         @isRunning = false
 
         @debounceSave = _.debounce(@save, 100)
@@ -54,38 +54,39 @@ class LiveCollection
 
         return unless _.isFunction(@doSave)
 
-        @queueById[id] = @lines[id]
+        @queueById[id] = @get(id)
         @debounceSave()
 
     save: () ->
-        F.demandGoodFunction(@doSave, 'doSave')
+        F.demandFunction(@doSave, 'doSave')
 
         return if (_.isEmpty(@queueById) || @isRunning)
 
-        @lastSave = [ ]
+        @lastUpdates = [ ]
         for item in _.values(@queueById)
             continue unless item.isDirty()
 
             changes = item.changes()
             changes.id = item.id
-            @lastSave.push(changes)
+            @lastUpdates.push(changes)
 
         @queueById = { }
-        return if (_.isEmpty(update))
+
+        return if (_.isEmpty(@lastUpdates))
 
         @isRunning = true
 
-        @trigger("save:start", updates)
-        @doSave(updates, _.bind(@finishSave, @))
+        @trigger("save:start", @lastUpdates)
+        @doSave(@lastUpdates, _.bind(@finishSave, @))
 
-    finishSave: (itemsById) ->
-        _.each(@lastSave, (changes) =>
+    finishSave: (itemsById, workflowVersion) ->
+        _.each(@lastUpdates, (changes) =>
             item = @byId[changes.id]
             responseItem = itemsById[changes.id]
 
             _.extend(item.previousValues, changes.newValues)
 
-            @applyDbValues(changes.id, responseItem)
+            #@applyDbValues(changes.id, responseItem)
         )
 
         @isRunning = false
@@ -93,11 +94,17 @@ class LiveCollection
         @workflowVersion++
         @trigger("workflowVersion:change", @workflowVersion)
 
-        @checkWorkflowVersion(data.workflowVersion)
+        @checkWorkflowVersion(workflowVersion)
 
         @trigger("save:done", @workflowVersion)
         @debounceSave()
 
+
+    checkWorkflowVersion: (workflowVersion) ->
+        if (workflowVersion > @workflowVersion)
+            return @refresh(workflowVersion)
+
+        return true
 
     _preAdd: (obj) ->
         unless obj.isLiveModel

@@ -173,3 +173,37 @@ describe 'LiveCollection', () ->
         c.reset(items)
         c.items.should.eql(items)
         _.keys(c.byId).should.eql(['10', '11'])
+
+    it 'save tests', (done) ->
+        c = testCollection({
+            doSave: (updates, callback) ->
+                updates.should.be.eql([{
+                    id: 0,
+                    newValues: { name: 'Deividy' },
+                    previousValues: { name: 'sue' }
+                }])
+
+
+                item = c.get(0)
+
+                item.isDirty().should.be.true
+                item.refresh()
+                item.isDirty().should.be.false
+
+                callback({ 0: item }, 1)
+
+        })
+ 
+        c.on('save:done', (workflowVersion) ->
+            workflowVersion.should.eql(1)
+            done()
+        )
+
+        c.reset(karmaArray())
+
+        item = c.get({ id: 0 })
+        item.name = 'Deividy'
+
+        c.queue(0)
+        c.save()
+
