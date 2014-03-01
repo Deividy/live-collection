@@ -101,3 +101,31 @@ describe 'LiveModel', () ->
         $container.find("input[name='lastName']").val().should.eql("Norris")
         $container.find("input[name='age']").val().should.eql("1000")
         $container.find(".karma").html().should.eql("99999")
+
+    it 'should update model by DOM change', () ->
+        $container = $("form div[data-rowid='1']")
+
+        m = liveModel(model2, liveCollectionEmpty)
+        m.wrap($container)
+
+        $container.find("input[name='firstName']").val("Chuck").triggerHandler("change")
+        $container.find("input[name='lastName']").val("Norris").triggerHandler("change")
+
+        m.firstName.should.eql("Chuck")
+        m.lastName.should.eql("Norris")
+
+
+    it 'should get changes model by DOM change', () ->
+        $container = $("form div[data-rowid='1']")
+
+        m = liveModel(model2, liveCollectionEmpty)
+        m.wrap($container)
+
+        $container.find("input[name='firstName']").val("Chuck").triggerHandler("change")
+        $container.find("input[name='lastName']").val("Norris").triggerHandler("change")
+
+        m.changes().should.eql({
+            id: 1,
+            newValues: { firstName: 'Chuck', lastName: 'Norris' },
+            previousValues: { firstName: 'Deividy', lastName: 'Metheler' }
+        })
