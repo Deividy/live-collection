@@ -194,6 +194,14 @@ describe 'LiveCollection', () ->
                 callback({ 0: item }, 1)
 
         })
+
+        c.on('save:start', (updates) ->
+            updates.should.be.eql([{
+                id: 0,
+                newValues: { name: 'Deividy' },
+                previousValues: { name: 'sue' }
+            }])
+        )
  
         c.on('save:done', (workflowVersion) ->
             workflowVersion.should.eql(1)
