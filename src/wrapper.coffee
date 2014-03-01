@@ -25,8 +25,6 @@ class LiveWrapper
             if ($textField.length > 0)
                 @textFields[attribute] = $textField
 
-            console.log @$
-
         @bindEvents()
 
     bindEvents: () ->
