@@ -175,13 +175,15 @@ describe 'LiveCollection', () ->
         _.keys(c.byId).should.eql(['10', '11'])
 
     it 'save tests', (done) ->
+        changes = [{
+            id: 0,
+            newValues: { name: 'Deividy' },
+            previousValues: { name: 'sue' }
+        }]
+
         c = testCollection({
             doSave: (updates, callback) ->
-                updates.should.be.eql([{
-                    id: 0,
-                    newValues: { name: 'Deividy' },
-                    previousValues: { name: 'sue' }
-                }])
+                updates.should.be.eql(changes)
 
                 c.isRunning.should.be.true
 
@@ -195,13 +197,7 @@ describe 'LiveCollection', () ->
 
         })
 
-        c.on('save:start', (updates) ->
-            updates.should.be.eql([{
-                id: 0,
-                newValues: { name: 'Deividy' },
-                previousValues: { name: 'sue' }
-            }])
-        )
+        c.on('save:start', (updates) -> updates.should.be.eql(changes))
  
         c.on('save:done', (workflowVersion) ->
             workflowVersion.should.eql(1)
