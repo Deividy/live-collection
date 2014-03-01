@@ -183,6 +183,7 @@ describe 'LiveCollection', () ->
                     previousValues: { name: 'sue' }
                 }])
 
+                c.isRunning.should.be.true
 
                 item = c.get(0)
 
@@ -196,6 +197,7 @@ describe 'LiveCollection', () ->
  
         c.on('save:done', (workflowVersion) ->
             workflowVersion.should.eql(1)
+            c.isRunning.should.be.false
             done()
         )
 
