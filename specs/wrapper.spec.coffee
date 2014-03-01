@@ -1,5 +1,3 @@
-{ liveWrapper, $ } = @
-
 attributes = [ 'firstName', 'lastName', 'age' ]
 attributeConfig = { numbers: [ 'age' ] }
 

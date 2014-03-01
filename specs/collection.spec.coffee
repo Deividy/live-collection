@@ -1,5 +1,3 @@
-{ _, liveCollection, liveModel } = @
-
 testCollection = (opt = {}) ->
     c = liveCollection(opt)
 

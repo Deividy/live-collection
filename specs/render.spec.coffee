@@ -1,5 +1,3 @@
-{ liveCollection, liveRender, $ } = @
-
 lr = lc = null
 
 collection = () -> [

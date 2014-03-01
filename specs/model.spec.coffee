@@ -1,5 +1,3 @@
-{ _, liveCollection, liveModel } = @
-
 liveCollectionEmpty = liveCollection()
 liveCollectionWithAttributes = liveCollection({
     attributes: [ 'id', 'name', 'karma', 'newAttribute' ]
@@ -143,5 +141,5 @@ describe 'LiveModel', () ->
         m.applyChanges()
 
         $container.find("input[name='firstName']").val().should.eql("Chuck")
-        $container.find("input[name='lastName']").val().should.eql("Norris") 
+        $container.find("input[name='lastName']").val().should.eql("Norris")
 
