@@ -6,11 +6,11 @@
     "dependencies": {
         "functoids": "git://github.com/Deividy/functoids.git",
         "underscore": "",
-        "coffee-script": "",
         "backbone": "",
         "jquery": "~2.1.0"
     },
     "devDependencies": {
+        "coffee-script": "",
         "mocha": "",
         "should": "",
         "karma-mocha": "^0.1.1",
