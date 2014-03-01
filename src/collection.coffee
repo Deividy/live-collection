@@ -8,6 +8,10 @@
 # reset: (items, count) ->
 # count: (count) ->
 
+# workflowVersion:change
+# save: start
+# save: done
+
 class LiveCollection
     constructor: (options = {}) ->
         _.extend(@, options)
@@ -50,6 +54,7 @@ class LiveCollection
 
         @isRunning = true
 
+        @trigger("save:start", updates, @)
         @doSave(updates, _.bind(@finishSave, @))
 
     finishSave: (itemsById) ->
@@ -65,7 +70,7 @@ class LiveCollection
         @isRunning = false
 
         @workflowVersion++
-        @trigger("change:workflowVersion", @workflowVersion)
+        @trigger("workflowVersion:change", @workflowVersion)
 
         @checkWorkflowVersion(data.workflowVersion)
 
