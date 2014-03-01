@@ -68,7 +68,7 @@ class LiveRender
             html = @render(item)
             @container.append(html)
 
-            item.initWrappers("[data-rowid='#{item.id}']")
+            item.wrap(@container.find("[data-rowid='#{item.id}']"))
 
     count: (count) -> @count.text(count)
 

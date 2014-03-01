@@ -82,9 +82,33 @@ describe 'LiveRender', () ->
         lc.reset(collection())
 
         $("[data-rowid='1']").length.should.eql(2)
-        $("ul#items [data-rowid='1']").length.should.eql(1)
+        $("ul#items li[data-rowid='1']").length.should.eql(1)
 
         lc.remove({ id: 1 })
 
         $("[data-rowid='1']").length.should.eql(1)
         $("ul#items li[data-rowid='1']").length.should.eql(0)
+
+    it '2way binding', () ->
+        lc.reset(collection())
+
+        $item = $("form div[data-rowid='1']")
+        item = lc.tryGet({ id: 1 })
+
+        item.wrap($item)
+
+        $item.find("input[name='firstName']").val("Johny").triggerHandler("change")
+        $item.find("input[name='age']").val(18).triggerHandler("change")
+
+        item.firstName.should.eql("Johny")
+        item.lastName.should.eql("Metheler")
+        item.age.should.eql(18)
+
+        $liItem = $("ul#items li[data-rowid='1']")
+
+        $liItem.find("input[name='firstName']").val().should.eql("Johny")
+        $liItem.find("input[name='lastName']").val().should.eql("Metheler")
+        $liItem.find(".age").html().should.eql("18")
+
+
+

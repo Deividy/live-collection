@@ -35,10 +35,44 @@ class LiveModel
 
         @liveWrappers.push(lw)
 
-        #@bindEvents(lw)
+        @bindEvents(lw)
         #@forcePopulate(lw)
         
         return lw
+
+    bindEvents: (lw) ->
+        F.demandGoodObject(lw, 'lw')
+
+        for name, field of lw.fields
+            field.on("keyup", _.bind(@onFieldKeyUp, @))
+            field.on("change", _.bind(@onFieldChange, @))
+
+        return
+
+    onFieldKeyUp: (ev) ->
+        @setValue(ev.currentTarget.name, $(ev.currentTarget).val())
+        
+    onFieldChange: (ev) ->
+        F.demandFunction(ev.preventDefault, 'ev.preventDefault')
+        ev.preventDefault()
+
+        $item = $(ev.currentTarget).closest("[data-rowid]")
+
+        name = ev.currentTarget.name
+        val = $(ev.currentTarget).val()
+
+        @setValue(name, val)
+
+    setValueInWrappers: (attribute, value) ->
+        for lw in @liveWrappers
+            if (lw.fields[attribute])
+                lw.fields[attribute].val(value)
+                continue
+
+            if (lw.textFields[attribute])
+                lw.textFields[attribute].html(value)
+
+        return
 
     resetWrappers: () ->
         @liveWrappers = [ ]
@@ -47,9 +81,9 @@ class LiveModel
         #F.demandSelector($container, '$container')
         
         $containers = @$()
-        for wrapper in @liveWrappers
-            if ($containers.index(wrapper.$) == $containers.index($container))
-                return wrapper
+        for lw in @liveWrappers
+            if ($containers.index(lw.$) == $containers.index($container))
+                return lw
 
         throw new Error("Wrapper not found for #{$container}")
 
@@ -98,6 +132,8 @@ class LiveModel
 
         if (hasChanged)
             @liveCollection.trigger("model:change", attribute, val, @)
+        
+        @setValueInWrappers(attribute, val)
 
     setValues: (values) ->
         F.demandGoodObject(values, 'values')

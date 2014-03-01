@@ -338,7 +338,48 @@
       var lw;
       lw = liveWrapper($container, this.attributes);
       this.liveWrappers.push(lw);
+      this.bindEvents(lw);
       return lw;
+    };
+
+    LiveModel.prototype.bindEvents = function(lw) {
+      var field, name, _ref;
+      F.demandGoodObject(lw, 'lw');
+      _ref = lw.fields;
+      for (name in _ref) {
+        field = _ref[name];
+        field.on("keyup", _.bind(this.onFieldKeyUp, this));
+        field.on("change", _.bind(this.onFieldChange, this));
+      }
+    };
+
+    LiveModel.prototype.onFieldKeyUp = function(ev) {
+      return this.setValue(ev.currentTarget.name, $(ev.currentTarget).val());
+    };
+
+    LiveModel.prototype.onFieldChange = function(ev) {
+      var $item, name, val;
+      F.demandFunction(ev.preventDefault, 'ev.preventDefault');
+      ev.preventDefault();
+      $item = $(ev.currentTarget).closest("[data-rowid]");
+      name = ev.currentTarget.name;
+      val = $(ev.currentTarget).val();
+      return this.setValue(name, val);
+    };
+
+    LiveModel.prototype.setValueInWrappers = function(attribute, value) {
+      var lw, _i, _len, _ref;
+      _ref = this.liveWrappers;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        lw = _ref[_i];
+        if (lw.fields[attribute]) {
+          lw.fields[attribute].val(value);
+          continue;
+        }
+        if (lw.textFields[attribute]) {
+          lw.textFields[attribute].html(value);
+        }
+      }
     };
 
     LiveModel.prototype.resetWrappers = function() {
@@ -346,13 +387,13 @@
     };
 
     LiveModel.prototype.findWrapper = function($container) {
-      var $containers, wrapper, _i, _len, _ref;
+      var $containers, lw, _i, _len, _ref;
       $containers = this.$();
       _ref = this.liveWrappers;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        wrapper = _ref[_i];
-        if ($containers.index(wrapper.$) === $containers.index($container)) {
-          return wrapper;
+        lw = _ref[_i];
+        if ($containers.index(lw.$) === $containers.index($container)) {
+          return lw;
         }
       }
       throw new Error("Wrapper not found for " + $container);
@@ -405,8 +446,9 @@
       hasChanged = this[attribute] !== val;
       this[attribute] = val;
       if (hasChanged) {
-        return this.liveCollection.trigger("model:change", attribute, val, this);
+        this.liveCollection.trigger("model:change", attribute, val, this);
       }
+      return this.setValueInWrappers(attribute, val);
     };
 
     LiveModel.prototype.setValues = function(values) {
@@ -558,7 +600,7 @@
         item = items[_i];
         html = this.render(item);
         this.container.append(html);
-        _results.push(item.initWrappers("[data-rowid='" + item.id + "']"));
+        _results.push(item.wrap(this.container.find("[data-rowid='" + item.id + "']")));
       }
       return _results;
     };
