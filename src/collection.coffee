@@ -31,22 +31,22 @@
 #   The callback expetcs the new workflowVersion
 #
 # doCreate (callback) -> 
-#
+#   The callback expects the new created item
 #
 # doRefresh: (workflowVersion, callback) ->
+#   The callback expects an array of items
 
 class LiveCollection
-    constructor: (options = {}) ->
+    constructor: (options = {}, @crud) ->
         _.extend(@, options)
         _.extend(@, Backbone.Events)
 
         @items = []
-        @sorted = @sortFn?
         @byId = {}
-        @workflowVersion ?= 0
 
         @reset(options.items, options.preSorted) if options.items?
 
+        @workflowVersion ?= 0
         @queueById = { }
         @lastUpdates = [ ]
         @isRunning = false
@@ -57,6 +57,22 @@ class LiveCollection
     belongs: (o) -> true
     isFresher: (candidate, current) -> true
 
+    refresh: () ->
+        F.demandFunction(@doRefresh, 'doRefresh')
+
+        @doRefresh(item, _.bind(@finishRefresh, @))
+
+    finishRefresh: (items) ->
+
+
+    create: () ->
+        F.demandFunction(@doCreate, 'doCreate')
+
+        @doCreate(item, _.bind(@finishCreate, @))
+
+    finishCreate: (item) ->
+        @merge(item)
+
     delete: (id) ->
         F.demandGoodNumber(id, 'id')
         F.demandFunction(@doDelete, 'doDelete')
@@ -64,12 +80,12 @@ class LiveCollection
         item = @get({ id })
         
         @trigger('delete:start', item)
-        @doDelete(item, _.bind(@finishDelete, @))
+        @doDelete(item, _.bind(@finishDelete, @, item))
+
+    finishDelete: (item, workflowVersion) ->
+        F.demandGoodNumber(workflowVersion, 'workflowVersion')
 
         @remove(item)
-
-    finishDelete: (workflowVersion) ->
-        F.demandGoodNumber(workflowVersion, 'workflowVersion')
 
         @workflowVersion++
         @trigger("workflowVersion:change", @workflowVersion)

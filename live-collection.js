@@ -8,20 +8,20 @@
   };
 
   LiveCollection = (function() {
-    function LiveCollection(options) {
+    function LiveCollection(options, crud) {
       if (options == null) {
         options = {};
       }
+      this.crud = crud;
       _.extend(this, options);
       _.extend(this, Backbone.Events);
       this.items = [];
-      this.sorted = this.sortFn != null;
       this.byId = {};
-      if (this.workflowVersion == null) {
-        this.workflowVersion = 0;
-      }
       if (options.items != null) {
         this.reset(options.items, options.preSorted);
+      }
+      if (this.workflowVersion == null) {
+        this.workflowVersion = 0;
       }
       this.queueById = {};
       this.lastUpdates = [];
@@ -41,6 +41,22 @@
       return true;
     };
 
+    LiveCollection.prototype.refresh = function() {
+      F.demandFunction(this.doRefresh, 'doRefresh');
+      return this.doRefresh(item, _.bind(this.finishRefresh, this));
+    };
+
+    LiveCollection.prototype.finishRefresh = function(items) {};
+
+    LiveCollection.prototype.create = function() {
+      F.demandFunction(this.doCreate, 'doCreate');
+      return this.doCreate(item, _.bind(this.finishCreate, this));
+    };
+
+    LiveCollection.prototype.finishCreate = function(item) {
+      return this.merge(item);
+    };
+
     LiveCollection.prototype["delete"] = function(id) {
       var item;
       F.demandGoodNumber(id, 'id');
@@ -49,12 +65,12 @@
         id: id
       });
       this.trigger('delete:start', item);
-      this.doDelete(item, _.bind(this.finishDelete, this));
-      return this.remove(item);
+      return this.doDelete(item, _.bind(this.finishDelete, this, item));
     };
 
-    LiveCollection.prototype.finishDelete = function(workflowVersion) {
+    LiveCollection.prototype.finishDelete = function(item, workflowVersion) {
       F.demandGoodNumber(workflowVersion, 'workflowVersion');
+      this.remove(item);
       this.workflowVersion++;
       this.trigger("workflowVersion:change", this.workflowVersion);
       this.checkWorkflowVersion(workflowVersion);
