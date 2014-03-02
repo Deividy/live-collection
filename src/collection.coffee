@@ -36,6 +36,11 @@
 # doRefresh: (workflowVersion, callback) ->
 #   The callback expects an array of items
 
+
+demandLiveModel = (item) ->
+    unless item.isLiveModel
+        throw new Error("Not a valid item")
+
 class LiveCollection
     constructor: (options = {}, @crud) ->
         _.extend(@, options)
@@ -63,7 +68,7 @@ class LiveCollection
         @doRefresh(item, _.bind(@finishRefresh, @))
 
     finishRefresh: (items) ->
-
+        F.demandGoodArray(items, 'items')
 
     create: () ->
         F.demandFunction(@doCreate, 'doCreate')
@@ -95,9 +100,7 @@ class LiveCollection
 
     queue: (item) ->
         F.demandGoodObject(item, 'item')
-
-        unless item.isLiveModel
-            throw new Error("Not a valid item")
+        demandLiveModel(item)
 
         @queueById[item.id] = item
         @debounceSave()
@@ -133,8 +136,9 @@ class LiveCollection
             responseItem = itemsById[changes.id]
 
             _.extend(item.previousValues, changes.newValues)
+            responseItem.id = changes.id
 
-            #@applyDbValues(changes.id, responseItem)
+            @merge(responseItem)
         )
 
         @isRunning = false

@@ -1,10 +1,16 @@
 (function() {
-  var LiveCollection, LiveModel, LiveRender, LiveWrapper, numberKeyCodes,
+  var LiveCollection, LiveModel, LiveRender, LiveWrapper, demandLiveModel, numberKeyCodes,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   this.liveCollection = function(options) {
     return new LiveCollection(options);
+  };
+
+  demandLiveModel = function(item) {
+    if (!item.isLiveModel) {
+      throw new Error("Not a valid item");
+    }
   };
 
   LiveCollection = (function() {
@@ -46,7 +52,9 @@
       return this.doRefresh(item, _.bind(this.finishRefresh, this));
     };
 
-    LiveCollection.prototype.finishRefresh = function(items) {};
+    LiveCollection.prototype.finishRefresh = function(items) {
+      return F.demandGoodArray(items, 'items');
+    };
 
     LiveCollection.prototype.create = function() {
       F.demandFunction(this.doCreate, 'doCreate');
@@ -79,9 +87,7 @@
 
     LiveCollection.prototype.queue = function(item) {
       F.demandGoodObject(item, 'item');
-      if (!item.isLiveModel) {
-        throw new Error("Not a valid item");
-      }
+      demandLiveModel(item);
       this.queueById[item.id] = item;
       return this.debounceSave();
     };
@@ -120,7 +126,9 @@
           var item, responseItem;
           item = _this.byId[changes.id];
           responseItem = itemsById[changes.id];
-          return _.extend(item.previousValues, changes.newValues);
+          _.extend(item.previousValues, changes.newValues);
+          responseItem.id = changes.id;
+          return _this.merge(responseItem);
         };
       })(this));
       this.isRunning = false;
