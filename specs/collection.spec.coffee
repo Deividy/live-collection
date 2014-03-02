@@ -210,7 +210,7 @@ describe 'LiveCollection', () ->
         item = c.get({ id: 0 })
         item.name = 'Deividy'
 
-        c.queue(0)
+        c.queue(item)
         c.save()
 
     it 'delete tests', (done) ->

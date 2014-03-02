@@ -105,7 +105,7 @@ class LiveModel
 
         if (hasChanged)
             @liveCollection.trigger("model:change", attribute, val, @)
-            @liveCollection.queue(@id)
+            @liveCollection.queue(@)
         
         @setValueInWrappers(attribute, val)
 

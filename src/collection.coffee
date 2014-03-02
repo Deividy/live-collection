@@ -93,12 +93,13 @@ class LiveCollection
         @checkWorkflowVersion(workflowVersion)
         @trigger('delete:done', workflowVersion)
 
-    queue: (id) ->
-        F.demandGoodNumber(id, 'id')
+    queue: (item) ->
+        F.demandGoodObject(item, 'item')
 
-        return unless _.isFunction(@doSave)
+        unless item.isLiveModel
+            throw new Error("Not a valid item")
 
-        @queueById[id] = @get(id)
+        @queueById[item.id] = item
         @debounceSave()
 
     save: () ->

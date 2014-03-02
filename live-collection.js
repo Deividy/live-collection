@@ -77,12 +77,12 @@
       return this.trigger('delete:done', workflowVersion);
     };
 
-    LiveCollection.prototype.queue = function(id) {
-      F.demandGoodNumber(id, 'id');
-      if (!_.isFunction(this.doSave)) {
-        return;
+    LiveCollection.prototype.queue = function(item) {
+      F.demandGoodObject(item, 'item');
+      if (!item.isLiveModel) {
+        throw new Error("Not a valid item");
       }
-      this.queueById[id] = this.get(id);
+      this.queueById[item.id] = item;
       return this.debounceSave();
     };
 
@@ -470,7 +470,7 @@
       this[attribute] = val;
       if (hasChanged) {
         this.liveCollection.trigger("model:change", attribute, val, this);
-        this.liveCollection.queue(this.id);
+        this.liveCollection.queue(this);
       }
       return this.setValueInWrappers(attribute, val);
     };
