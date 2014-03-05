@@ -21,19 +21,22 @@
       this.crud = crud;
       _.extend(this, options);
       _.extend(this, Backbone.Events);
-      this.canSave = (options != null ? options.doSave : void 0) != null;
-      this.items = [];
-      this.byId = {};
-      if (options.items != null) {
-        this.reset(options.items, options.preSorted);
-      }
+      this.canRefresh = options.doRefresh != null;
+      this.canCreate = options.doCreate != null;
+      this.canDelete = options.doDelete != null;
+      this.canSave = options.doSave != null;
       if (this.workflowVersion == null) {
         this.workflowVersion = 0;
       }
+      this.items = [];
+      this.byId = {};
       this.queueById = {};
       this.lastUpdates = [];
       this.isRunning = false;
       this.debounceSave = _.debounce(this.save, 100);
+      if (options.items != null) {
+        this.reset(options.items, options.preSorted);
+      }
     }
 
     LiveCollection.prototype.comparator = function(a, b) {
@@ -152,15 +155,6 @@
       return this.debounceSave();
     };
 
-    LiveCollection.prototype.nextWorkflowVersion = function(workflowVersion) {
-      this.workflowVersion++;
-      this.trigger("workflowVersion:change", this.workflowVersion);
-      if (workflowVersion != null) {
-        return this.checkWorkflowVersion(workflowVersion);
-      }
-      return true;
-    };
-
     LiveCollection.prototype.queue = function(item) {
       F.demandGoodObject(item, 'item');
       demandLiveModel(item);
@@ -168,6 +162,15 @@
       if (this.canSave) {
         return this.debounceSave();
       }
+    };
+
+    LiveCollection.prototype.nextWorkflowVersion = function(workflowVersion) {
+      this.workflowVersion++;
+      this.trigger("workflowVersion:change", this.workflowVersion);
+      if (workflowVersion != null) {
+        return this.checkWorkflowVersion(workflowVersion);
+      }
+      return true;
     };
 
     LiveCollection.prototype.checkWorkflowVersion = function(workflowVersion) {
