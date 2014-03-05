@@ -26,7 +26,6 @@
 # doSave: (updates, callback) -> 
 #  The callback expects an hash of the updates, like { id1: obj, id2: obj }
 #
-#
 # doDelete: (model, callback) ->
 #   The callback expetcs the new workflowVersion
 #

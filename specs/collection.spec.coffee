@@ -181,31 +181,29 @@ describe 'LiveCollection', () ->
             previousValues: { name: 'sue' }
         }]
 
-        c = testCollection({
-            doSave: (updates, next) ->
-                updates.should.be.eql(changes)
+        doSave = (updates, next) ->
+            updates.should.be.eql(changes)
 
-                c.isRunning.should.be.true
+            c.isRunning.should.be.true
 
-                item = c.get(0)
+            item = c.get(0)
 
-                item.isDirty().should.be.true
-                item.refresh()
-                item.isDirty().should.be.false
+            item.isDirty().should.be.true
+            item.refresh()
+            item.isDirty().should.be.false
 
-                next({ 0: item }, 1)
+            next({ 0: item }, 1)
 
-        })
+        c = testCollection({ doSave })
+        c.reset(karmaArray())
 
         c.on('save:start', (updates) -> updates.should.be.eql(changes))
- 
         c.on('save:done', (workflowVersion) ->
             workflowVersion.should.eql(1)
             c.isRunning.should.be.false
             done()
         )
 
-        c.reset(karmaArray())
 
         item = c.get({ id: 0 })
         item.name = 'Deividy'
@@ -214,20 +212,18 @@ describe 'LiveCollection', () ->
         c.save()
 
     it 'delete tests', (done) ->
-        c = testCollection({
-            doDelete: (item, next) ->
-                item.id.should.be.eql(0)
-                next(1)
-        })
+        doDelete = (item, next) ->
+            item.id.should.be.eql(0)
+            next(1)
+
+        c = testCollection({ doDelete })
+        c.reset(karmaArray())
 
         c.on('delete:start', (item) -> item.id.should.be.eql(0))
-
         c.on('delete:done', (workflowVersion) ->
             workflowVersion.should.eql(1)
             done()
         )
-
-        c.reset(karmaArray())
 
         c.delete(0)
 
