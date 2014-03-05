@@ -61,22 +61,18 @@ class LiveCollection
     comparator: (a, b) -> 0
     belongs: (o) -> true
     isFresher: (candidate, current) -> true
-
-    refresh: () ->
+    
+    # CRUD methods for sync
+    refresh: (@workflowVersion) ->
         F.demandFunction(@doRefresh, 'doRefresh')
-
+        @trigger("refresh:start", @workflowVersion)
         @doRefresh(item, _.bind(@finishRefresh, @))
-
-    finishRefresh: (items) ->
-        F.demandGoodArray(items, 'items')
 
     create: () ->
         F.demandFunction(@doCreate, 'doCreate')
 
+        @trigger("create:start", @)
         @doCreate(item, _.bind(@finishCreate, @))
-
-    finishCreate: (item) ->
-        @merge(item)
 
     delete: (id) ->
         F.demandGoodNumber(id, 'id')
@@ -86,25 +82,7 @@ class LiveCollection
         
         @trigger('delete:start', item)
         @doDelete(item, _.bind(@finishDelete, @, item))
-
-    finishDelete: (item, workflowVersion) ->
-        F.demandGoodNumber(workflowVersion, 'workflowVersion')
-
-        @remove(item)
-
-        @workflowVersion++
-        @trigger("workflowVersion:change", @workflowVersion)
-
-        @checkWorkflowVersion(workflowVersion)
-        @trigger('delete:done', workflowVersion)
-
-    queue: (item) ->
-        F.demandGoodObject(item, 'item')
-        demandLiveModel(item)
-
-        @queueById[item.id] = item
-        @debounceSave()
-
+ 
     save: () ->
         F.demandFunction(@doSave, 'doSave')
 
@@ -126,6 +104,31 @@ class LiveCollection
 
         @trigger("save:start", @lastUpdates)
         @doSave(@lastUpdates, _.bind(@finishSave, @))
+
+    # Finish CRUD for sync
+    finishRefresh: (items) ->
+        F.demandGoodArray(items, 'items')
+        # TODO:
+
+        @trigger('refresh:done', items, @workflowVersion)
+
+    finishCreate: (item) ->
+        F.demandGoodObject(item, 'item')
+        @merge(item)
+
+        @trigger('create:done', item)
+
+    finishDelete: (item, workflowVersion) ->
+        demandLiveModel(item)
+        F.demandGoodNumber(workflowVersion, 'workflowVersion')
+
+        @remove(item)
+
+        @workflowVersion++
+        @trigger("workflowVersion:change", @workflowVersion)
+
+        @checkWorkflowVersion(workflowVersion)
+        @trigger('delete:done', workflowVersion)
 
     finishSave: (itemsById, workflowVersion) ->
         F.demandGoodObject(itemsById, 'itemsById')
@@ -150,7 +153,16 @@ class LiveCollection
 
         @trigger("save:done", @workflowVersion)
         @debounceSave()
+    
+    # # #
 
+    queue: (item) ->
+        F.demandGoodObject(item, 'item')
+        demandLiveModel(item)
+
+        @queueById[item.id] = item
+
+        @debounceSave() if (_.isFunction(@doSave))
 
     checkWorkflowVersion: (workflowVersion) ->
         F.demandGoodNumber(workflowVersion, 'workflowVersion')
@@ -159,7 +171,7 @@ class LiveCollection
             return @refresh(workflowVersion)
 
         return true
-
+    
     _preAdd: (obj) ->
         F.demandGoodObject(obj, 'obj')
 
@@ -184,6 +196,7 @@ class LiveCollection
         return 0 if a.valueOf() == b.valueOf()
         return if a < b then -1 else 1
 
+    # CRUD front-end reset/merge/remove from items
     reset: (items) ->
         unless _.isArray(items)
             throw new Error('items must be an array')
@@ -213,6 +226,64 @@ class LiveCollection
 
         return @
 
+    remove: (e, index) ->
+        obj = @tryGet(e)
+        return unless obj?
+
+        index ?= @binarySearch(obj)
+        delete @byId[obj.id]
+        @items.splice(index, 1)
+        
+        @trigger("remove", obj, index)
+        @trigger("count", @items.length)
+
+        obj.destroy()
+
+        return @
+
+    # Search and get methods
+    get: (e) ->
+        obj = @tryGet(e)
+        return obj if obj?
+
+        throw new Error("Did not find object or id #{JSON.stringify(e)}")
+
+    tryGet: (e) ->
+        id = e.id ? e
+        return @byId[id]
+
+    indexOf: (e) ->
+        obj = @get(e)
+        return @binarySearch(obj)
+
+    # if the object exists, we find its index. otherwise, we find the index
+    # where it should be inserted
+    binarySearch: (obj) ->
+        return 0 if @items.length == 0
+
+        left = 0
+        right = @items.length - 1
+
+        while left <= right
+            mid = (left + right) >> 1
+            cmp = @_compare(obj, @items[mid])
+
+            left = mid + 1 if (cmp > 0)
+            right = mid - 1 if (cmp < 0)
+            return mid if cmp == 0
+
+        return if cmp > 0 then mid + 1 else mid
+        
+    hasRightIndex: (obj, idx) ->
+        if idx > 0
+            return false if @_compare(@items[idx-1], obj) >= 0
+
+        if idx < @items.length - 1
+            return false if @_compare(obj, @items[idx+1]) >= 0
+
+        return true
+
+    # Privates
     _mergeOne: (o) ->
         unless o.id?
             throw new Error("id must not be nil")
@@ -258,61 +329,5 @@ class LiveCollection
             # number of operations
             @remove(current, idxCurrent)
             @merge(current)
-
-    indexOf: (e) ->
-        obj = @get(e)
-        return @binarySearch(obj)
-
-    get: (e) ->
-        obj = @tryGet(e)
-        return obj if obj?
-
-        throw new Error("Did not find object or id #{JSON.stringify(e)}")
-
-    tryGet: (e) ->
-        id = e.id ? e
-        return @byId[id]
-
-    # if the object exists, we find its index. otherwise, we find the index
-    # where it should be inserted
-    binarySearch: (obj) ->
-        return 0 if @items.length == 0
-
-        left = 0
-        right = @items.length - 1
-
-        while left <= right
-            mid = (left + right) >> 1
-            cmp = @_compare(obj, @items[mid])
-
-            left = mid + 1 if (cmp > 0)
-            right = mid - 1 if (cmp < 0)
-            return mid if cmp == 0
-
-        return if cmp > 0 then mid + 1 else mid
-        
-    hasRightIndex: (obj, idx) ->
-        if idx > 0
-            return false if @_compare(@items[idx-1], obj) >= 0
-
-        if idx < @items.length - 1
-            return false if @_compare(obj, @items[idx+1]) >= 0
-
-        return true
-
-    remove: (e, index) ->
-        obj = @tryGet(e)
-        return unless obj?
-
-        index ?= @binarySearch(obj)
-        delete @byId[obj.id]
-        @items.splice(index, 1)
-        
-        @trigger("remove", obj, index)
-        @trigger("count", @items.length)
-
-        obj.destroy()
-
-        return @
 
 @liveCollection.Class = LiveCollection

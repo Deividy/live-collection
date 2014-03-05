@@ -182,7 +182,7 @@ describe 'LiveCollection', () ->
         }]
 
         c = testCollection({
-            doSave: (updates, callback) ->
+            doSave: (updates, next) ->
                 updates.should.be.eql(changes)
 
                 c.isRunning.should.be.true
@@ -193,7 +193,7 @@ describe 'LiveCollection', () ->
                 item.refresh()
                 item.isDirty().should.be.false
 
-                callback({ 0: item }, 1)
+                next({ 0: item }, 1)
 
         })
 
@@ -215,9 +215,9 @@ describe 'LiveCollection', () ->
 
     it 'delete tests', (done) ->
         c = testCollection({
-            doDelete: (item, callback) ->
+            doDelete: (item, next) ->
                 item.id.should.be.eql(0)
-                callback(1)
+                next(1)
         })
 
         c.on('delete:start', (item) -> item.id.should.be.eql(0))

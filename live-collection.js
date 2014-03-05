@@ -47,22 +47,17 @@
       return true;
     };
 
-    LiveCollection.prototype.refresh = function() {
+    LiveCollection.prototype.refresh = function(workflowVersion) {
+      this.workflowVersion = workflowVersion;
       F.demandFunction(this.doRefresh, 'doRefresh');
+      this.trigger("refresh:start", this.workflowVersion);
       return this.doRefresh(item, _.bind(this.finishRefresh, this));
-    };
-
-    LiveCollection.prototype.finishRefresh = function(items) {
-      return F.demandGoodArray(items, 'items');
     };
 
     LiveCollection.prototype.create = function() {
       F.demandFunction(this.doCreate, 'doCreate');
+      this.trigger("create:start", this);
       return this.doCreate(item, _.bind(this.finishCreate, this));
-    };
-
-    LiveCollection.prototype.finishCreate = function(item) {
-      return this.merge(item);
     };
 
     LiveCollection.prototype["delete"] = function(id) {
@@ -74,22 +69,6 @@
       });
       this.trigger('delete:start', item);
       return this.doDelete(item, _.bind(this.finishDelete, this, item));
-    };
-
-    LiveCollection.prototype.finishDelete = function(item, workflowVersion) {
-      F.demandGoodNumber(workflowVersion, 'workflowVersion');
-      this.remove(item);
-      this.workflowVersion++;
-      this.trigger("workflowVersion:change", this.workflowVersion);
-      this.checkWorkflowVersion(workflowVersion);
-      return this.trigger('delete:done', workflowVersion);
-    };
-
-    LiveCollection.prototype.queue = function(item) {
-      F.demandGoodObject(item, 'item');
-      demandLiveModel(item);
-      this.queueById[item.id] = item;
-      return this.debounceSave();
     };
 
     LiveCollection.prototype.save = function() {
@@ -118,6 +97,27 @@
       return this.doSave(this.lastUpdates, _.bind(this.finishSave, this));
     };
 
+    LiveCollection.prototype.finishRefresh = function(items) {
+      F.demandGoodArray(items, 'items');
+      return this.trigger('refresh:done', items, this.workflowVersion);
+    };
+
+    LiveCollection.prototype.finishCreate = function(item) {
+      F.demandGoodObject(item, 'item');
+      this.merge(item);
+      return this.trigger('create:done', item);
+    };
+
+    LiveCollection.prototype.finishDelete = function(item, workflowVersion) {
+      demandLiveModel(item);
+      F.demandGoodNumber(workflowVersion, 'workflowVersion');
+      this.remove(item);
+      this.workflowVersion++;
+      this.trigger("workflowVersion:change", this.workflowVersion);
+      this.checkWorkflowVersion(workflowVersion);
+      return this.trigger('delete:done', workflowVersion);
+    };
+
     LiveCollection.prototype.finishSave = function(itemsById, workflowVersion) {
       F.demandGoodObject(itemsById, 'itemsById');
       F.demandGoodNumber(workflowVersion, 'workflowVersion');
@@ -137,6 +137,15 @@
       this.checkWorkflowVersion(workflowVersion);
       this.trigger("save:done", this.workflowVersion);
       return this.debounceSave();
+    };
+
+    LiveCollection.prototype.queue = function(item) {
+      F.demandGoodObject(item, 'item');
+      demandLiveModel(item);
+      this.queueById[item.id] = item;
+      if (_.isFunction(this.doSave)) {
+        return this.debounceSave();
+      }
     };
 
     LiveCollection.prototype.checkWorkflowVersion = function(workflowVersion) {
@@ -215,6 +224,85 @@
       return this;
     };
 
+    LiveCollection.prototype.remove = function(e, index) {
+      var obj;
+      obj = this.tryGet(e);
+      if (obj == null) {
+        return;
+      }
+      if (index == null) {
+        index = this.binarySearch(obj);
+      }
+      delete this.byId[obj.id];
+      this.items.splice(index, 1);
+      this.trigger("remove", obj, index);
+      this.trigger("count", this.items.length);
+      obj.destroy();
+      return this;
+    };
+
+    LiveCollection.prototype.get = function(e) {
+      var obj;
+      obj = this.tryGet(e);
+      if (obj != null) {
+        return obj;
+      }
+      throw new Error("Did not find object or id " + (JSON.stringify(e)));
+    };
+
+    LiveCollection.prototype.tryGet = function(e) {
+      var id, _ref;
+      id = (_ref = e.id) != null ? _ref : e;
+      return this.byId[id];
+    };
+
+    LiveCollection.prototype.indexOf = function(e) {
+      var obj;
+      obj = this.get(e);
+      return this.binarySearch(obj);
+    };
+
+    LiveCollection.prototype.binarySearch = function(obj) {
+      var cmp, left, mid, right;
+      if (this.items.length === 0) {
+        return 0;
+      }
+      left = 0;
+      right = this.items.length - 1;
+      while (left <= right) {
+        mid = (left + right) >> 1;
+        cmp = this._compare(obj, this.items[mid]);
+        if (cmp > 0) {
+          left = mid + 1;
+        }
+        if (cmp < 0) {
+          right = mid - 1;
+        }
+        if (cmp === 0) {
+          return mid;
+        }
+      }
+      if (cmp > 0) {
+        return mid + 1;
+      } else {
+        return mid;
+      }
+    };
+
+    LiveCollection.prototype.hasRightIndex = function(obj, idx) {
+      if (idx > 0) {
+        if (this._compare(this.items[idx - 1], obj) >= 0) {
+          return false;
+        }
+      }
+      if (idx < this.items.length - 1) {
+        if (this._compare(obj, this.items[idx + 1]) >= 0) {
+          return false;
+        }
+      }
+      return true;
+    };
+
     LiveCollection.prototype._mergeOne = function(o) {
       var current, idx;
       if (o.id == null) {
@@ -264,85 +352,6 @@
         this.remove(current, idxCurrent);
         return this.merge(current);
       }
-    };
-
-    LiveCollection.prototype.indexOf = function(e) {
-      var obj;
-      obj = this.get(e);
-      return this.binarySearch(obj);
-    };
-
-    LiveCollection.prototype.get = function(e) {
-      var obj;
-      obj = this.tryGet(e);
-      if (obj != null) {
-        return obj;
-      }
-      throw new Error("Did not find object or id " + (JSON.stringify(e)));
-    };
-
-    LiveCollection.prototype.tryGet = function(e) {
-      var id, _ref;
-      id = (_ref = e.id) != null ? _ref : e;
-      return this.byId[id];
-    };
-
-    LiveCollection.prototype.binarySearch = function(obj) {
-      var cmp, left, mid, right;
-      if (this.items.length === 0) {
-        return 0;
-      }
-      left = 0;
-      right = this.items.length - 1;
-      while (left <= right) {
-        mid = (left + right) >> 1;
-        cmp = this._compare(obj, this.items[mid]);
-        if (cmp > 0) {
-          left = mid + 1;
-        }
-        if (cmp < 0) {
-          right = mid - 1;
-        }
-        if (cmp === 0) {
-          return mid;
-        }
-      }
-      if (cmp > 0) {
-        return mid + 1;
-      } else {
-        return mid;
-      }
-    };
-
-    LiveCollection.prototype.hasRightIndex = function(obj, idx) {
-      if (idx > 0) {
-        if (this._compare(this.items[idx - 1], obj) >= 0) {
-          return false;
-        }
-      }
-      if (idx < this.items.length - 1) {
-        if (this._compare(obj, this.items[idx + 1]) >= 0) {
-          return false;
-        }
-      }
-      return true;
-    };
-
-    LiveCollection.prototype.remove = function(e, index) {
-      var obj;
-      obj = this.tryGet(e);
-      if (obj == null) {
-        return;
-      }
-      if (index == null) {
-        index = this.binarySearch(obj);
-      }
-      delete this.byId[obj.id];
-      this.items.splice(index, 1);
-      this.trigger("remove", obj, index);
-      this.trigger("count", this.items.length);
-      obj.destroy();
-      return this;
     };
 
     return LiveCollection;
