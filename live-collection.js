@@ -50,8 +50,7 @@
     LiveCollection.prototype.refresh = function(workflowVersion) {
       this.workflowVersion = workflowVersion;
       F.demandFunction(this.doRefresh, 'doRefresh');
-      this.trigger("refresh:start", this.workflowVersion);
-      return this.doRefresh(item, _.bind(this.finishRefresh, this));
+      return this.doRefresh(this.workflowVersion, _.bind(this.finishRefresh, this));
     };
 
     LiveCollection.prototype.create = function() {
@@ -96,8 +95,10 @@
       return this.doSave(this.lastUpdates, _.bind(this.finishSave, this));
     };
 
-    LiveCollection.prototype.finishRefresh = function(items) {
+    LiveCollection.prototype.finishRefresh = function(items, workflowVersion) {
+      this.workflowVersion = workflowVersion;
       F.demandGoodArray(items, 'items');
+      this.merge(items);
       return this.trigger('refresh:done', items, this.workflowVersion);
     };
 

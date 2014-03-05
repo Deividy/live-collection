@@ -12,14 +12,13 @@
 #
 # workflowVersion:change = (workflowVersion) ->
 #
-# save: start = (updates) ->
-# save: done = (workflowVersion) ->
-# create: end = (data, workflowVersion) ->   
-# delete: start = (model) ->
-# delete: end = (workflowVersion) ->   
-# refresh: start = (workflowVersion) ->
-# refresh: end = (workflowVersion) ->   
-
+# save:start = (updates) ->
+# save:done = (workflowVersion) ->
+# create:done = (data, workflowVersion) ->   
+# delete:start = (model) ->
+# delete:done = (workflowVersion) ->   
+# refresh:done = (data, workflowVersion) ->   
+#
 # for sync have to implemenet .doSave(), .doDelete(), .doCreate(), .doRefresh()
 #
 # doSave: (updates, callback) -> 
@@ -63,8 +62,7 @@ class LiveCollection
     # CRUD methods for sync
     refresh: (@workflowVersion) ->
         F.demandFunction(@doRefresh, 'doRefresh')
-        @trigger("refresh:start", @workflowVersion)
-        @doRefresh(item, _.bind(@finishRefresh, @))
+        @doRefresh(@workflowVersion, _.bind(@finishRefresh, @))
 
     create: () ->
         F.demandFunction(@doCreate, 'doCreate')
@@ -103,10 +101,12 @@ class LiveCollection
         @doSave(@lastUpdates, _.bind(@finishSave, @))
 
     # Finish CRUD for sync
-    finishRefresh: (items) ->
+    finishRefresh: (items, @workflowVersion) ->
         F.demandGoodArray(items, 'items')
-        # TODO:
+        # MUST:
+        # applyValues, check for delete and new items
 
+        @merge(items)
         @trigger('refresh:done', items, @workflowVersion)
 
     finishCreate: (item) ->

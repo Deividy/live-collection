@@ -236,11 +236,35 @@ describe 'LiveCollection', () ->
 
         c = testCollection({ doCreate })
         c.on('create:done', (workflowVersion) ->
-            i = _.pick(c.get({ id: 0 }), 'id', 'name', 'karma')
-            item.should.eql(i)
+            i = c.get({ id: 0})
+            i.isLiveModel.should.be.true
+            item.should.eql(_.pick(i, 'id', 'name', 'karma'))
 
             done()
         )
 
         c.create()
+
+    it 'refresh tests', (done) ->
+        items = karmaArray()
+
+        doRefresh = (workflowVersion, next) ->
+            workflowVersion.should.be.eql(1)
+            next(items, 2)
+
+        c = testCollection({ doRefresh })
+        c.on('refresh:done', (items, workflowVersion) ->
+            items.should.be.eql(items)
+            workflowVersion.should.be.eql(2)
+
+            items[0].should.be.eql(_.pick(c.get({ id: 0 }), 'id', 'name', 'karma'))
+
+            done()
+        )
+
+        c.refresh(1)
+            
+
+
+    
 
