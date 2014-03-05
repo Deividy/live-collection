@@ -46,17 +46,18 @@ class LiveCollection
         @canDelete = options.doDelete?
         @canSave = options.doSave?
 
-        @items = []
-        @byId = {}
-
-        @reset(options.items, options.preSorted) if options.items?
-
         @workflowVersion ?= 0
+
+        @items = [ ]
+        @byId = { }
+
         @queueById = { }
         @lastUpdates = [ ]
         @isRunning = false
 
         @debounceSave = _.debounce(@save, 100)
+
+        @reset(options.items, options.preSorted) if options.items?
  
     comparator: (a, b) -> 0
     belongs: (o) -> true
@@ -156,8 +157,6 @@ class LiveCollection
         @debounceSave()
     
     # # #
-
-
     queue: (item) ->
         F.demandGoodObject(item, 'item')
         demandLiveModel(item)
