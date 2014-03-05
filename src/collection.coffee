@@ -20,7 +20,6 @@
 # refresh:done = (data, workflowVersion) ->   
 #
 # for sync have to implemenet .doSave(), .doDelete(), .doCreate(), .doRefresh()
-#
 # doRefresh: (workflowVersion, next) ->
 #  next is @finishRefresh(arrayOfItems, workflowVersion)
 #
@@ -82,7 +81,7 @@ class LiveCollection
         item = @get({ id })
         
         @trigger('delete:start', item)
-        @doDelete(item, _.bind(@finishDelete, @, item))
+        @doDelete(item, _.bind(@finishDelete, @))
  
     save: () ->
         F.demandFunction(@doSave, 'doSave')

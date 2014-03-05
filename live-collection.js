@@ -83,7 +83,7 @@
         id: id
       });
       this.trigger('delete:start', item);
-      return this.doDelete(item, _.bind(this.finishDelete, this, item));
+      return this.doDelete(item, _.bind(this.finishDelete, this));
     };
 
     LiveCollection.prototype.save = function() {

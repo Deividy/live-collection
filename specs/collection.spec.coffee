@@ -214,7 +214,7 @@ describe 'LiveCollection', () ->
     it 'delete tests', (done) ->
         doDelete = (item, next) ->
             item.id.should.be.eql(0)
-            next(1)
+            next(item, 1)
 
         c = testCollection({ doDelete })
         c.reset(karmaArray())
