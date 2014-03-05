@@ -14,7 +14,6 @@
 #
 # save: start = (updates) ->
 # save: done = (workflowVersion) ->
-# create: start = (liveCollection) ->
 # create: end = (data, workflowVersion) ->   
 # delete: start = (model) ->
 # delete: end = (workflowVersion) ->   
@@ -70,8 +69,7 @@ class LiveCollection
     create: () ->
         F.demandFunction(@doCreate, 'doCreate')
 
-        @trigger("create:start", @)
-        @doCreate(item, _.bind(@finishCreate, @))
+        @doCreate(_.bind(@finishCreate, @))
 
     delete: (id) ->
         F.demandGoodNumber(id, 'id')

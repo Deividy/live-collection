@@ -228,3 +228,19 @@ describe 'LiveCollection', () ->
         c.delete(0)
 
 
+    it 'create tests', (done) ->
+        item = { id: 0, name: 'Deividy', karma: 69 }
+
+        doCreate = (next) ->
+            next(item)
+
+        c = testCollection({ doCreate })
+        c.on('create:done', (workflowVersion) ->
+            i = _.pick(c.get({ id: 0 }), 'id', 'name', 'karma')
+            item.should.eql(i)
+
+            done()
+        )
+
+        c.create()
+

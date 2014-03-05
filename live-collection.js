@@ -56,8 +56,7 @@
 
     LiveCollection.prototype.create = function() {
       F.demandFunction(this.doCreate, 'doCreate');
-      this.trigger("create:start", this);
-      return this.doCreate(item, _.bind(this.finishCreate, this));
+      return this.doCreate(_.bind(this.finishCreate, this));
     };
 
     LiveCollection.prototype["delete"] = function(id) {
