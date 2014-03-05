@@ -235,7 +235,7 @@ describe 'LiveCollection', () ->
             next(item)
 
         c = testCollection({ doCreate })
-        c.on('create:done', (workflowVersion) ->
+        c.on('create:done', (item, workflowVersion) ->
             i = c.get({ id: 0})
             i.isLiveModel.should.be.true
             item.should.eql(_.pick(i, 'id', 'name', 'karma'))

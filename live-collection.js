@@ -96,16 +96,21 @@
     };
 
     LiveCollection.prototype.finishRefresh = function(items, workflowVersion) {
-      this.workflowVersion = workflowVersion;
       F.demandGoodArray(items, 'items');
       this.merge(items);
+      if (workflowVersion != null) {
+        this.workflowVersion = workflowVersion;
+      }
       return this.trigger('refresh:done', items, this.workflowVersion);
     };
 
-    LiveCollection.prototype.finishCreate = function(item) {
+    LiveCollection.prototype.finishCreate = function(item, workflowVersion) {
       F.demandGoodObject(item, 'item');
       this.merge(item);
-      return this.trigger('create:done', item);
+      if (workflowVersion != null) {
+        this.workflowVersion = workflowVersion;
+      }
+      return this.trigger('create:done', item, this.workflowVersion);
     };
 
     LiveCollection.prototype.finishDelete = function(item, workflowVersion) {

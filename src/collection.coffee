@@ -21,18 +21,17 @@
 #
 # for sync have to implemenet .doSave(), .doDelete(), .doCreate(), .doRefresh()
 #
-# doSave: (updates, callback) -> 
-#  The callback expects an hash of the updates, like { id1: obj, id2: obj }
+# doRefresh: (workflowVersion, next) ->
+#  next is @finishRefresh(arrayOfItems, workflowVersion)
 #
-# doDelete: (model, callback) ->
-#   The callback expetcs the new workflowVersion
+# doCreate (next) -> 
+#  next is @finishCreate(item, workflowVersion)
 #
-# doCreate (callback) -> 
-#   The callback expects the new created item
+# doDelete: (model, next) ->
+#  next is @finishDelete(item, workflowVersion)
 #
-# doRefresh: (workflowVersion, callback) ->
-#   The callback expects an array of items
-
+# doSave: (updates, next) -> 
+#  next is @finishSave(itemsById, workflowVersion)
 
 demandLiveModel = (item) ->
     unless item.isLiveModel
@@ -101,19 +100,23 @@ class LiveCollection
         @doSave(@lastUpdates, _.bind(@finishSave, @))
 
     # Finish CRUD for sync
-    finishRefresh: (items, @workflowVersion) ->
+    finishRefresh: (items, workflowVersion) ->
         F.demandGoodArray(items, 'items')
         # MUST:
         # applyValues, check for delete and new items
 
         @merge(items)
+        @workflowVersion = workflowVersion if workflowVersion?
+
         @trigger('refresh:done', items, @workflowVersion)
 
-    finishCreate: (item) ->
+    finishCreate: (item, workflowVersion) ->
         F.demandGoodObject(item, 'item')
         @merge(item)
 
-        @trigger('create:done', item)
+        @workflowVersion = workflowVersion if workflowVersion?
+
+        @trigger('create:done', item, @workflowVersion)
 
     finishDelete: (item, workflowVersion) ->
         demandLiveModel(item)
