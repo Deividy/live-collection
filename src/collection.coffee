@@ -41,7 +41,10 @@ class LiveCollection
         _.extend(@, options)
         _.extend(@, Backbone.Events)
 
-        @canSave = options?.doSave?
+        @canRefresh = options.doRefresh?
+        @canCreate = options.doCreate?
+        @canDelete = options.doDelete?
+        @canSave = options.doSave?
 
         @items = []
         @byId = {}
@@ -154,14 +157,6 @@ class LiveCollection
     
     # # #
 
-    nextWorkflowVersion: (workflowVersion) ->
-        @workflowVersion++
-        @trigger("workflowVersion:change", @workflowVersion)
-
-        if workflowVersion?
-            return @checkWorkflowVersion(workflowVersion)
-
-        return true
 
     queue: (item) ->
         F.demandGoodObject(item, 'item')
@@ -170,6 +165,15 @@ class LiveCollection
         @queueById[item.id] = item
 
         @debounceSave() if (@canSave)
+
+    nextWorkflowVersion: (workflowVersion) ->
+        @workflowVersion++
+        @trigger("workflowVersion:change", @workflowVersion)
+
+        if workflowVersion?
+            return @checkWorkflowVersion(workflowVersion)
+
+        return true
 
     checkWorkflowVersion: (workflowVersion) ->
         F.demandGoodNumber(workflowVersion, 'workflowVersion')
