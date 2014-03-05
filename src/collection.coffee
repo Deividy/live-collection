@@ -24,7 +24,7 @@
 # doRefresh: (workflowVersion, next) ->
 #  next is @finishRefresh(arrayOfItems, workflowVersion)
 #
-# doCreate (next) -> 
+# doCreate: (next) -> 
 #  next is @finishCreate(item, workflowVersion)
 #
 # doDelete: (model, next) ->
@@ -42,6 +42,8 @@ class LiveCollection
         _.extend(@, options)
         _.extend(@, Backbone.Events)
 
+        @canSave = options.doSave?
+
         @items = []
         @byId = {}
 
@@ -57,6 +59,11 @@ class LiveCollection
     comparator: (a, b) -> 0
     belongs: (o) -> true
     isFresher: (candidate, current) -> true
+
+    doRefresh: (workflowVersion, next) -> throw new Error("Not Implemented")
+    doCreate: (next) -> throw new Error("Not Implemented")
+    doDelete: (model, next) -> throw new Error("Not Implemented")
+    doSave: (updates, next) -> throw new Error("Not Implemented")
     
     # CRUD methods for sync
     refresh: (@workflowVersion) ->
@@ -162,7 +169,7 @@ class LiveCollection
 
         @queueById[item.id] = item
 
-        @debounceSave() if (_.isFunction(@doSave))
+        @debounceSave() if (@canSave)
 
     checkWorkflowVersion: (workflowVersion) ->
         F.demandGoodNumber(workflowVersion, 'workflowVersion')

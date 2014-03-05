@@ -21,6 +21,7 @@
       this.crud = crud;
       _.extend(this, options);
       _.extend(this, Backbone.Events);
+      this.canSave = options.doSave != null;
       this.items = [];
       this.byId = {};
       if (options.items != null) {
@@ -45,6 +46,22 @@
 
     LiveCollection.prototype.isFresher = function(candidate, current) {
       return true;
+    };
+
+    LiveCollection.prototype.doRefresh = function(workflowVersion, next) {
+      throw new Error("Not Implemented");
+    };
+
+    LiveCollection.prototype.doCreate = function(next) {
+      throw new Error("Not Implemented");
+    };
+
+    LiveCollection.prototype.doDelete = function(model, next) {
+      throw new Error("Not Implemented");
+    };
+
+    LiveCollection.prototype.doSave = function(updates, next) {
+      throw new Error("Not Implemented");
     };
 
     LiveCollection.prototype.refresh = function(workflowVersion) {
@@ -148,7 +165,7 @@
       F.demandGoodObject(item, 'item');
       demandLiveModel(item);
       this.queueById[item.id] = item;
-      if (_.isFunction(this.doSave)) {
+      if (this.canSave) {
         return this.debounceSave();
       }
     };
