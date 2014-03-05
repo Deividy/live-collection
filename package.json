@@ -5,7 +5,7 @@
     "private": false,
     "dependencies": {
         "functoids": "git://github.com/Deividy/functoids.git",
-        "underscore": "",
+        "underscore": "1.6.0",
         "backbone": "",
         "jquery": "~2.1.0"
     },

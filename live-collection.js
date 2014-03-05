@@ -21,7 +21,7 @@
       this.crud = crud;
       _.extend(this, options);
       _.extend(this, Backbone.Events);
-      this.canSave = options.doSave != null;
+      this.canSave = (options != null ? options.doSave : void 0) != null;
       this.items = [];
       this.byId = {};
       if (options.items != null) {
@@ -115,28 +115,21 @@
     LiveCollection.prototype.finishRefresh = function(items, workflowVersion) {
       F.demandGoodArray(items, 'items');
       this.merge(items);
-      if (workflowVersion != null) {
-        this.workflowVersion = workflowVersion;
-      }
+      this.nextWorkflowVersion(workflowVersion);
       return this.trigger('refresh:done', items, this.workflowVersion);
     };
 
     LiveCollection.prototype.finishCreate = function(item, workflowVersion) {
       F.demandGoodObject(item, 'item');
       this.merge(item);
-      if (workflowVersion != null) {
-        this.workflowVersion = workflowVersion;
-      }
+      this.nextWorkflowVersion(workflowVersion);
       return this.trigger('create:done', item, this.workflowVersion);
     };
 
     LiveCollection.prototype.finishDelete = function(item, workflowVersion) {
       demandLiveModel(item);
-      F.demandGoodNumber(workflowVersion, 'workflowVersion');
       this.remove(item);
-      this.workflowVersion++;
-      this.trigger("workflowVersion:change", this.workflowVersion);
-      this.checkWorkflowVersion(workflowVersion);
+      this.nextWorkflowVersion(workflowVersion);
       return this.trigger('delete:done', workflowVersion);
     };
 
@@ -154,11 +147,18 @@
         };
       })(this));
       this.isRunning = false;
-      this.workflowVersion++;
-      this.trigger("workflowVersion:change", this.workflowVersion);
-      this.checkWorkflowVersion(workflowVersion);
+      this.nextWorkflowVersion(workflowVersion);
       this.trigger("save:done", this.workflowVersion);
       return this.debounceSave();
+    };
+
+    LiveCollection.prototype.nextWorkflowVersion = function(workflowVersion) {
+      this.workflowVersion++;
+      this.trigger("workflowVersion:change", this.workflowVersion);
+      if (workflowVersion != null) {
+        return this.checkWorkflowVersion(workflowVersion);
+      }
+      return true;
     };
 
     LiveCollection.prototype.queue = function(item) {

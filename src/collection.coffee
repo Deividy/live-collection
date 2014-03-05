@@ -42,7 +42,7 @@ class LiveCollection
         _.extend(@, options)
         _.extend(@, Backbone.Events)
 
-        @canSave = options.doSave?
+        @canSave = options?.doSave?
 
         @items = []
         @byId = {}
@@ -113,28 +113,23 @@ class LiveCollection
         # applyValues, check for delete and new items
 
         @merge(items)
-        @workflowVersion = workflowVersion if workflowVersion?
 
+        @nextWorkflowVersion(workflowVersion)
         @trigger('refresh:done', items, @workflowVersion)
 
     finishCreate: (item, workflowVersion) ->
         F.demandGoodObject(item, 'item')
         @merge(item)
 
-        @workflowVersion = workflowVersion if workflowVersion?
-
+        @nextWorkflowVersion(workflowVersion)
         @trigger('create:done', item, @workflowVersion)
 
     finishDelete: (item, workflowVersion) ->
         demandLiveModel(item)
-        F.demandGoodNumber(workflowVersion, 'workflowVersion')
 
         @remove(item)
 
-        @workflowVersion++
-        @trigger("workflowVersion:change", @workflowVersion)
-
-        @checkWorkflowVersion(workflowVersion)
+        @nextWorkflowVersion(workflowVersion)
         @trigger('delete:done', workflowVersion)
 
     finishSave: (itemsById, workflowVersion) ->
@@ -153,15 +148,21 @@ class LiveCollection
 
         @isRunning = false
 
-        @workflowVersion++
-        @trigger("workflowVersion:change", @workflowVersion)
-
-        @checkWorkflowVersion(workflowVersion)
-
+        @nextWorkflowVersion(workflowVersion)
         @trigger("save:done", @workflowVersion)
+
         @debounceSave()
     
     # # #
+
+    nextWorkflowVersion: (workflowVersion) ->
+        @workflowVersion++
+        @trigger("workflowVersion:change", @workflowVersion)
+
+        if workflowVersion?
+            return @checkWorkflowVersion(workflowVersion)
+
+        return true
 
     queue: (item) ->
         F.demandGoodObject(item, 'item')
